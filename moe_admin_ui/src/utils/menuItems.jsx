@@ -5,7 +5,7 @@ import {
 
 export const ADMIN_MENU = [
   { key: '/', icon: <AppstoreOutlined />, label: 'Dashboard' },
-  { key: '/student', icon: <UserOutlined />, label: 'Account Management' },
+  { key: '/accounts', icon: <UserOutlined />, label: 'Account Management' },
   { key: '/topup', icon: <WalletOutlined />, label: 'Top-up Management' },
   { key: '/course', icon: <ReadOutlined />, label: 'Course Management' },
   { key: '/settings', icon: <SettingOutlined />, label: 'Settings' },

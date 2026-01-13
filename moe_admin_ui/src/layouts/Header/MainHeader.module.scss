@@ -1,6 +1,6 @@
 @use '../../../assets/styles/_variables' as *;
 
-.shared-header {
+.sharedHeader {
   background: $color-bg-white !important; 
   border-bottom: 1px solid $color-border;
   padding: 0 24px !important;
@@ -16,18 +16,18 @@
   box-shadow: $shadow-sm;
 
   // --- HEADER LEFT ---
-  .header-left {
+  .headerLeft {
     display: flex;
     align-items: center;
     gap: 12px;
 
-    .mobile-toggle {
+    .mobileToggle {
       font-size: 18px;
       margin-right: 8px;
       cursor: pointer;
     }
 
-    .logo-container {
+    .logoContainer {
       width: 36px;
       height: 36px;
       background: linear-gradient(135deg, $color-navy 0%, $color-teal 100%);
@@ -36,10 +36,10 @@
       align-items: center;
       justify-content: center;
       color: white;
-      flex-shrink: 0; // Không bị co lại khi màn hình nhỏ
+      flex-shrink: 0; 
     }
 
-    .brand-info {
+    .brandInfo {
       display: flex;
       flex-direction: column;
       line-height: 1.2;
@@ -58,12 +58,12 @@
   }
 
   // --- HEADER RIGHT ---
-  .header-right {
+  .headerRight {
     display: flex;
     align-items: center;
     gap: 16px;
 
-    .portal-link {
+    .portalLink {
       display: flex;
       align-items: center;
       gap: 8px;
@@ -75,7 +75,7 @@
       border-radius: 6px;
       transition: all 0.2s;
       height: 36px;
-      white-space: nowrap; // Ngăn xuống dòng
+      white-space: nowrap;
 
       &:hover {
         background-color: #f1f5f9;
@@ -83,7 +83,7 @@
       }
     }
 
-    .portal-btn-active {
+    .portalBtnActive {
       display: flex;
       align-items: center;
       gap: 8px;
@@ -93,36 +93,32 @@
       height: 38px;
       padding: 0 16px;
       border-radius: 6px;
-      white-space: nowrap; // Ngăn xuống dòng
+      white-space: nowrap;
       
-      &.user-mode {
+      &.userMode {
         background-color: $color-teal-light;
         color: $color-teal;
       }
 
-      &.admin-mode {
+      &.adminMode {
         background-color: $color-navy-light;
         color: $color-navy;
       }
     }
   }
 
-  // ==========================================
-  // RESPONSIVE STYLES (Mobile & Tablet)
-  // ==========================================
-  
+  // --- RESPONSIVE STYLES ---
   @media (max-width: 768px) {
-    padding: 0 16px !important; // Giảm lề 2 bên
+    padding: 0 16px !important;
 
-    // 1. Ẩn Subtitle "Education Account System" cho gọn
-    .header-left .brand-info span {
+    .headerLeft .brandInfo span {
       display: none;
     }
   }
 
   @media (max-width: 380px) {
-     .header-left .brand-info h1 {
-        display: none;
-     }
+    .headerLeft .brandInfo h1 {
+      display: none;
+    }
   }
 }
