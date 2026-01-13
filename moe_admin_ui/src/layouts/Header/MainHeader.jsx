@@ -1,7 +1,7 @@
 import React from 'react';
 import { Layout } from 'antd';
 import { SafetyCertificateOutlined, UserOutlined } from '@ant-design/icons';
-import './MainHeader.scss';
+import styles from './MainHeader.module.scss';
 
 const { Header } = Layout;
 
@@ -13,13 +13,13 @@ const MainHeader = ({ toggleMobile }) => {
 
 
   return (
-    <Header className="shared-header">
-      <div className="header-left">
+    <Header className={styles.sharedHeader}>
+      <div className={styles.headerLeft}>
         {toggleMobile}
-        <div className="logo-container">
+        <div className={styles.logoContainer}>
           <EduLogo />
         </div>
-        <div className="brand-info">
+        <div className={styles.brandInfo}>
           <h1>EduCredit</h1>
           <span>Education Account System</span>
         </div>
