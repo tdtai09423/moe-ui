@@ -13,10 +13,10 @@ export const router = createBrowserRouter([
         index: true, // Đây là trang sẽ hiện ra khi vào địa chỉ "/"
         element: <div>Trang Dashboard</div> 
       },
-      // {
-      //   path: 'accounts',
-      //   element: <div>Trang Quản lý User</div>
-      // }
+      {
+        path: '/accounts',
+        element: <div>Trang Quản lý User</div>
+      }
     ]
   },
   {
