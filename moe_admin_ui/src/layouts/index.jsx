@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { MenuOutlined ,CloseOutlined} from '@ant-design/icons';
 import SharedHeader from './Header/MainHeader';
 import AdminSidebar from './Sidebar/Sidebar';
-import './index.scss'; 
+import styles from './index.module.scss'; 
 
 const { Sider, Content } = Layout;
 
@@ -12,18 +12,18 @@ const AdminLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <Layout className="app-layout-main">
+    <Layout className={styles.appLayoutMain}>
       <SharedHeader
         toggleMobile={
-          <div className="mobile-toggle-btn" onClick={() => setMobileOpen(true)}>
+          <div className={styles.mobileToggleBtn} onClick={() => setMobileOpen(true)}>
             <MenuOutlined />
           </div>
         }
       />
 
-      <Layout className="layout-content-wrapper">
+      <Layout className={styles.layoutContentWrapper}>
         {/* Sidebar cứng cho Desktop */}
-        <Sider width={260} theme="light" trigger={null} className="layout-sider">
+        <Sider width={260} theme="light" trigger={null} className={styles.layoutSider}>
           <AdminSidebar />
         </Sider>
 
@@ -33,7 +33,7 @@ const AdminLayout = () => {
           placement="left"
           onClose={() => setMobileOpen(false)}
           size={280} 
-          className="responsive-drawer" 
+          className={styles.responsiveDrawer}
           styles={{ body: { padding: 0 } }}
           closeIcon={<CloseOutlined style={{ fontSize: 20, color: '#64748b' }} />}
           title={<span style={{ fontWeight: 700, fontSize: 16 }}>Menu</span>}
@@ -41,7 +41,7 @@ const AdminLayout = () => {
           <AdminSidebar onClose={() => setMobileOpen(false)} />
         </Drawer>
 
-        <Content className="layout-content">
+        <Content className={styles.layoutContent}>
           <Outlet />
         </Content>
       </Layout>
