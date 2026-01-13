@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { MenuOutlined ,CloseOutlined} from '@ant-design/icons';
 import SharedHeader from './Header/MainHeader';
 import AdminSidebar from './Sidebar/Sidebar';
-import './index.scss'; 
+import './index.scss';
 
 const { Sider, Content } = Layout;
 

@@ -42,4 +42,5 @@ const Sidebar = ({ onClose }) => {
     </div>
   );
 };
+
 export default Sidebar;

@@ -1,11 +1,8 @@
 import React from 'react';
-
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AdminLayout from '../layouts';
 
 //Pages
-
-
 
 export const router = createBrowserRouter([
   {
