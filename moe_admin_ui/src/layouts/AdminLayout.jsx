@@ -6,6 +6,7 @@ import SharedHeader from './Header/MainHeader';
 import AdminSidebar from './Sidebar/Sidebar';
 import styles from './index.module.scss';
 
+
 const { Sider, Content } = Layout;
 
 const AdminLayout = () => {

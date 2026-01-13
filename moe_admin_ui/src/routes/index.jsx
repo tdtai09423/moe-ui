@@ -1,6 +1,8 @@
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import AdminLayout from '../layouts';
+import AdminLayout from '../layouts/AdminLayout';
+import IntroduceLayout from '../layouts/IntroduceLayout';
+import IntroducePage from '../pages/Introduce/IntroducePage.jsx';
 
 //Pages
 
@@ -16,6 +18,15 @@ export const router = createBrowserRouter([
       {
         path: '/accounts',
         element: <div>Trang Quản lý User</div>
+      }
+    ]
+  },
+ {
+    path: '/introduce',
+    children: [
+      {
+        index: true,
+        element: <IntroducePage />
       }
     ]
   },
