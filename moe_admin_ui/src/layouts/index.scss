@@ -1,0 +1,95 @@
+@use '../../assets/styles/_variables' as *;
+
+.app-layout-main {
+  min-height: 100vh;
+  
+  // Wrapper bao quanh Sider + Content (nằm dưới Header)
+  .layout-content-wrapper {
+    margin-top: $header-height; 
+    
+    // --- 1. SIDEBAR CỨNG (Desktop Only) ---
+    .layout-sider {
+      position: fixed;
+      left: 0;
+      top: $header-height;
+      height: calc(100vh - #{$header-height});
+      z-index: 99;
+      background: #fff;
+      overflow-y: hidden;
+      
+      // MẶC ĐỊNH: Hiện trên desktop
+      display: block;
+
+      // Ẩn khi màn hình nhỏ (Mobile/Tablet)
+      @media (max-width: $screen-lg) {
+        display: none !important;
+      }
+    }
+
+    // --- 2. MAIN CONTENT ---
+    .layout-content {
+      // Mặc định: Cách lề trái bằng chiều rộng sidebar
+      margin-left: $sidebar-width;
+      min-height: calc(100vh - #{$header-height});
+      transition: all 0.2s ease-in-out; // Hiệu ứng mượt khi resize
+
+      // Khi màn hình nhỏ: Full width
+      @media (max-width: $screen-lg) {
+        margin-left: 0 !important;
+        padding: 16px; // Giảm padding chút cho gọn
+      }
+    }
+  }
+}
+
+// --- 3. CLASS ẨN/HIỆN NÚT HAMBURGER ---
+// Class này sẽ được gắn vào nút 3 gạch
+.mobile-toggle-btn {
+  // Mặc định (Desktop): Ẩn đi
+  display: none !important;
+
+  // Khi màn hình nhỏ: Hiện lên
+  @media (max-width: $screen-lg) {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 20px;
+    
+    // Style cho nút để dễ bấm
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    &:hover {
+      background-color: #f1f5f9;
+    }
+  }
+}
+
+
+.responsive-drawer {
+  
+  // Mặc định Ant Design sẽ gán width inline (280px)
+  // Ta dùng CSS để override khi ở màn hình điện thoại
+  
+  .ant-drawer-content-wrapper {
+    transition: all 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+
+    // BREAKPOINT ĐIỆN THOẠI (< 768px)
+    @media (max-width: 768px) {
+      width: 100% !important; // Ép full màn hình
+    }
+  }
+
+  // Chỉnh sửa header và body cho đẹp trên mobile
+  .ant-drawer-header {
+    border-bottom: 1px solid #f1f5f9;
+  }
+  
+  // Ẩn border phải của sidebar khi nằm trong drawer full
+  .admin-sidebar-container, 
+  .user-sidebar-container {
+    border-right: none !important; 
+    width: 100%;
+  }
+}
