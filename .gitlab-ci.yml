@@ -4,6 +4,11 @@ stages:
   - build
   - deploy
 
+default:
+  tags:
+    - dind-test
+
+
 # ==================== BUILD FE ADMIN ====================
 build_admin_ui:
   stage: build
