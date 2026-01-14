@@ -1,0 +1,115 @@
+@use "../../../assets/styles/_variables" as *;
+
+.accountContainer {
+  padding: 24px;
+  background-color: #f8fafc; // Nền nhạt phía sau table
+  min-height: 100vh;
+  font-family: $font-family2;
+
+  // --- HEADER SECTION ---
+  .headerSection {
+    margin-bottom: 24px;
+
+    .title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .subTitle {
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .createBtn {
+      background-color: #15847d !important;
+      border-color: #15847d !important;
+      height: 40px;
+      border-radius: 8px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &:hover {
+        background-color: #106b65 !important;
+      }
+    }
+  }
+
+  // --- FILTER SECTION ---
+  .filterCard {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    .searchInput {
+      border-radius: 8px;
+      margin-bottom: 20px;
+      background-color: rgb(248,250,252);
+    }
+
+    .filterLabel {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+
+    .customSelect,
+    .customInput {
+      border-radius: 6px;
+      width: 100%;
+      background-color: rgb(248,250,252);
+    }
+  }
+
+  // --- TABLE SECTION ---
+  .tableWrapper {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+
+    :global {
+      .ant-table-thead > tr > th {
+        background: #fff;
+        color: #64748b;
+        font-weight: 600;
+        font-size: 13px;
+        border-bottom: 1px solid #f1f5f9;
+
+        &::before {
+          display: none;
+        } // Bỏ vạch kẻ dọc mặc định của Antd
+      }
+
+      .ant-table-tbody > tr > td {
+        font-size: 14px;
+        color: #1e293b;
+        padding: 16px;
+      }
+
+      .ant-table-row:hover > td {
+        background-color: #f8fafc !important;
+      }
+    }
+
+    .nricCell {
+      color: #1677ff; // Màu xanh link cho NRIC
+      cursor: pointer;
+    }
+
+    .balanceCell {
+      font-weight: 700;
+    }
+  }
+}
+
+
+/* CREATE ACCOUNT */
