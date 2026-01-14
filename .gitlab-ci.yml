@@ -1,4 +1,4 @@
-image: mcr.microsoft.com/mirror/docker/library/node:24-alpine
+image: mcr.microsoft.com/devcontainers/javascript-node:24
 
 stages:
   - build
