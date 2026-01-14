@@ -1,0 +1,90 @@
+@use '../../assets/styles/_variables' as *;
+
+.appLayoutMain {
+  min-height: 100vh;
+  
+  // Wrapper bao quanh Sider + Content (nằm dưới Header)
+  .layoutContentWrapper {
+    margin-top: $header-height; 
+    
+    // --- 1. SIDEBAR CỨNG (Desktop Only) ---
+    .layoutSider {
+      position: fixed;
+      left: 0;
+      top: $header-height;
+      height: calc(100vh - #{$header-height});
+      z-index: 99;
+      background: #fff;
+      overflow-y: hidden;
+      
+      // MẶC ĐỊNH: Hiện trên desktop
+      display: block;
+
+      // Ẩn khi màn hình nhỏ (Mobile/Tablet)
+      @media (max-width: $screen-lg) {
+        display: none !important;
+      }
+    }
+
+    // --- 2. MAIN CONTENT ---
+    .layoutContent {
+      // Mặc định: Cách lề trái bằng chiều rộng sidebar
+      margin-left: $sidebar-width;
+      min-height: calc(100vh - #{$header-height});
+      transition: all 0.2s ease-in-out;
+
+      // Khi màn hình nhỏ: Full width
+      @media (max-width: $screen-lg) {
+        margin-left: 0 !important;
+        padding: 16px;
+      }
+    }
+  }
+}
+
+// --- 3. CLASS ẨN/HIỆN NÚT HAMBURGER ---
+.mobileToggleBtn {
+  display: none !important;
+
+  @media (max-width: $screen-lg) {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    
+    &:hover {
+      background-color: #f1f5f9;
+    }
+  }
+}
+
+// --- 4. RESPONSIVE DRAWER (ANT DESIGN) ---
+.responsiveDrawer {
+  // Vì Drawer của Antd render ở một lớp ngoài (Portal), 
+  // ta dùng :global để override class của thư viện.
+  :global {
+    .ant-drawer-content-wrapper {
+      transition: all 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+
+      @media (max-width: 768px) {
+        width: 100% !important; 
+      }
+    }
+
+    .ant-drawer-header {
+      border-bottom: 1px solid #f1f5f9;
+    }
+    
+    // Giả sử các container sidebar cũng đã chuyển sang Module, 
+    // ta cần can thiệp để bỏ border-right khi nằm trong Drawer
+    .admin-sidebar-container, 
+    .user-sidebar-container {
+      border-right: none !important; 
+      width: 100%;
+    }
+  }
+}
