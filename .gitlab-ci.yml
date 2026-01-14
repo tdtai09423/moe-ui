@@ -1,4 +1,4 @@
-image: mcr.microsoft.com/devcontainers/javascript-node:1-24-bullseye
+image: mcr.microsoft.com/mirror/docker/library/node:24-alpine
 
 stages:
   - build
