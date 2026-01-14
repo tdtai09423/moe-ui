@@ -39,7 +39,7 @@ build_student_ui:
 
 deploy_fe_admin:
   stage: deploy
-  image: mcr.microsoft.com/azure-cli
+  image: node:24-alpine
   dependencies:
     - build_admin_ui
   script:
@@ -51,7 +51,7 @@ deploy_fe_admin:
 
 deploy_fe_user:
   stage: deploy
-  image: mcr.microsoft.com/azure-cli
+  image: node:24-alpine
   dependencies:
     - build_student_ui
   script:
