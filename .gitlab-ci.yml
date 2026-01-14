@@ -1,4 +1,4 @@
-image: node:24
+image: node:24-alpine
 
 stages:
   - build
@@ -14,6 +14,7 @@ build_admin_ui:
   stage: build
   script:
     - cd moe_admin_ui
+    - node -v
     - npm install
     - npm run build
   artifacts:
@@ -26,6 +27,7 @@ build_student_ui:
   stage: build
   script:
     - cd moe_student_ui
+    - node -v
     - npm install
     - npm run build
   artifacts:
