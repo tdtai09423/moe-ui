@@ -22,7 +22,7 @@ const AccountManage = () => {
   const navigate = useNavigate();
 
   const handleMultiSelectWithAll = (values, fieldName, updateFilter) => {
-    if (values.includes(null)) {
+    if (values.includes("ALL")) {
       updateFilter({ [fieldName]: [] });
       return;
     }
@@ -86,12 +86,12 @@ const AccountManage = () => {
                   )
                 }
                 options={[
-                  { value: null, label: "All Levels" },
-                  { value: "Primary", label: "Primary" },
-                  { value: "Secondary", label: "Secondary" },
-                  { value: "Post-secondary", label: "Post-secondary" },
-                  { value: "Tertiary", label: "Tertiary" },
-                  { value: "Post-graduate", label: "Post-graduate" },
+                   { value: "ALL", label: "All Levels" },
+                  { value: "0", label: "Primary" },
+                  { value: "1", label: "Secondary" },
+                  { value: "2", label: "Post-secondary" },
+                  { value: "3", label: "Tertiary" },
+                  { value: "4", label: "Post-graduate" },
                 ]}
               />
             </div>
@@ -113,10 +113,9 @@ const AccountManage = () => {
               <Select
                 mode="multiple"
                 className={styles.customSelect}
+                showSearch={false}
                 value={
-                  filter.ResidentialStatus.length === 0
-                    ? [null]
-                    : filter.ResidentialStatus
+                  filter.ResidentialStatus
                 }
                 onChange={(values) =>
                   handleMultiSelectWithAll(
@@ -126,15 +125,13 @@ const AccountManage = () => {
                   )
                 }
                 options={[
-                  { value: null, label: "All Status" },
-                  { value: "Primary", label: "Primary" },
-                  { value: "Singapore Citizen", label: "Singapore Citizen" },
+                  { value: "ALL", label: "All Status" },
+                  { value: "0", label: "Singapore Citizen" },
                   {
-                    value: "Permanent Resident (PR)",
+                    value: "1",
                     label: "Permanent Resident (PR)",
                   },
-                  { value: "Tertiary", label: "Tertiary" },
-                  { value: "Non-citizen", label: "Non-citizen" },
+                  { value: "2", label: "Non-citizen" },
                 ]}
               />
             </div>

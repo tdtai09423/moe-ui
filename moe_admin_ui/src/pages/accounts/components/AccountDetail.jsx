@@ -18,10 +18,29 @@ import {
   CheckCircleOutlined,
 } from "@ant-design/icons";
 import styles from "./styles/AccountDetail.module.scss";
+import { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { useAccounts } from "../../../hooks/accounts/useAccount";
+import { formatDate } from "../../../utils/dateFormat";
 
 const { Title, Text } = Typography;
 
 export default function StudentDetailPage() {
+  const { id } = useParams();
+  const { loading, error, accountInfo, getAccountByID } = useAccounts();
+
+  useEffect(() => {
+    if (!id) return;
+    const fetchAccount = async () => {
+      await getAccountByID(id);
+    };
+    fetchAccount();
+  }, [id]);
+  console.log("Id:", id);
+
+  if (loading) return <Spin />;
+  if (error) return <Alert message="Load failed" type="error" />;
+  console.log(accountInfo);
   return (
     <Layout className={styles.page}>
       {/* Header */}
@@ -30,9 +49,9 @@ export default function StudentDetailPage() {
           <ArrowLeftOutlined className={styles.backIcon} />
           <div>
             <Title level={4} className={styles.name}>
-              Chua Jun Hao
+              {accountInfo.fullName}
             </Title>
-            <Text className={styles.subId}>S9217788Q</Text>
+            <Text className={styles.subId}>{accountInfo.nric}</Text>
           </div>
         </div>
 
@@ -74,34 +93,27 @@ export default function StudentDetailPage() {
       <Card title="Student Information" className={styles.section}>
         <Row gutter={40}>
           <Col span={8}>
-            <Info label="Full Name" value="Chua Jun Hao" />
-            <Info label="Email" value="junhao.chua@gmail.com" />
-            <Info label="Residential Status" value="SC (Singapore Citizen)" />
-            <Info
-              label="Registered Address"
-              value="9 Bedok South Ave 1, SG"
-            />
-            <Info
-              label="Mailing Address"
-              value="33 Bedok North Ave 4, SG"
-            />
-          </Col>
-
-          <Col span={8}>
-            <Info label="NRIC" value="S9217788Q" />
-            <Info label="Phone" value="+65 9345 6791" />
-            <Info
-              label="Schooling Status"
-              value={<Tag>Not In School</Tag>}
-            />
-          </Col>
-
-          <Col span={8}>
             <Info
               label="Date of Birth"
-              value="18/07/92 (33 years old)"
+              value={formatDate(accountInfo.dateOfBirth)}
             />
-            <Info label="Education Level" value="Tertiary" />
+            <Info label="Email" value={accountInfo.email} />
+            <Info label="Phone" value={accountInfo.contactNumber} />
+            <Info label="Mailing Address" value="33 Bedok North Ave 4, SG" />
+          </Col>
+
+          <Col span={8}>
+            <Info label="Education Level" value={accountInfo.educationLevel} />
+            <Info
+              label="Residential Status"
+              value={accountInfo.residentialStatus}
+            />
+
+            <Info label="Schooling Status" value={<Tag>Not In School</Tag>} />
+          </Col>
+
+          <Col span={8}>
+            <Info label="Date of Birth" value="18/07/92 (33 years old)" />
             <Info label="Account Created" value="14/11/22" />
           </Col>
         </Row>

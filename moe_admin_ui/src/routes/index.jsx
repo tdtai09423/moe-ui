@@ -18,7 +18,7 @@ export const router = createBrowserRouter([
         element: <div>Trang Dashboard</div>,
       },
       {
-        path: "/accounts",
+        path: "accounts",
         children: [
           {
             index: true,
