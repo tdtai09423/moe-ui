@@ -15,14 +15,12 @@ const UserSidebar = ({ onClose }) => {
 
   // Hàm xử lý đăng xuất
   const handleLogout = () => {
-
-    // localStorage.removeItem('access_token');
-    // localStorage.removeItem('user_data');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user_data');
     
-    // 2. Chuyển hướng về trang login
     navigate('/login');
     
-    // 3. Đóng drawer nếu đang ở mobile
+  
     if (onClose) onClose();
   };
 

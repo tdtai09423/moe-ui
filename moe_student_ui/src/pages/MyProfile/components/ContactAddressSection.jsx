@@ -1,24 +1,37 @@
-import React, { useState } from 'react';
-import { Card, Button, Row, Col, Input, Form, message } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Button, Row, Col, Input, Form } from 'antd';
 import { MailOutlined, EditOutlined, SaveOutlined, PhoneOutlined } from '@ant-design/icons';
 import styles from '../UserProfile.module.scss';
 
-const ContactAddressSection = () => {
+const ContactAddressSection = ({ profileData, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
   const initialValues = {
-    email: 'junhoao.chua@gmail.com',
-    phone: '+65 9345 6791',
-    registeredAddress: '9 Bedok South Ave 1, SG',
-    mailingAddress: '33 Bedok North Ave 4, SG'
+    email: profileData?.emailAddress || '',
+    phone: profileData?.phoneNumber || '',
+    registeredAddress: profileData?.registeredAddress || '',
+    mailingAddress: profileData?.mailingAddress || ''
   };
 
-  const handleSave = () => {
-    form.validateFields().then(() => {
-      message.success('Contact & Address updated successfully!');
-      setIsEditing(false);
-    });
+  useEffect(() => {
+    form.setFieldsValue(initialValues);
+  }, [profileData]);
+
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
+      setLoading(true);
+      const success = await onUpdate(values);
+      if (success) {
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error('Validation failed:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -76,8 +89,8 @@ const ContactAddressSection = () => {
 
           {isEditing && (
             <div className={styles.formFooter}>
-              <Button size="large" className={styles.btnCancel} onClick={() => setIsEditing(false)}>Cancel</Button>
-              <Button type="primary" size="large" className={styles.btnSave} onClick={handleSave} icon={<SaveOutlined />}>Save Changes</Button>
+              <Button size="large" className={styles.btnCancel} onClick={() => setIsEditing(false)} disabled={loading}>Cancel</Button>
+              <Button type="primary" size="large" className={styles.btnSave} onClick={handleSave} icon={<SaveOutlined />} loading={loading}>Save Changes</Button>
             </div>
           )}
         </Form>

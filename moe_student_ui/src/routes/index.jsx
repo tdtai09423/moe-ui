@@ -1,5 +1,8 @@
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import IMG1 from '../assets/images/IMG1.jpg';
+import IMG2 from '../assets/images/IMG2.jpg';
+
 
 // Layouts & Guards
 import MainLayout from '../layouts/MainLayout.jsx';
@@ -40,7 +43,28 @@ export const router = createBrowserRouter([
       },
       {
         path: 'balance',
-        element: <div>Trang Quản lý balance</div>
+        element: (
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            minHeight: '80vh',
+            padding: '40px',
+            background: '#f5f5f5'
+          }}>
+            <img 
+              src={IMG1} 
+              alt="Account Balance" 
+              style={{ 
+                maxWidth: '100%', 
+                width: '1200px',
+                height: 'auto',
+                borderRadius: '20px',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.15)'
+              }} 
+            />
+          </div>
+        )
       },
       {
         path: 'courses',
@@ -56,7 +80,28 @@ export const router = createBrowserRouter([
       },
       {
         path: 'support',
-        element: <div>Trang support</div>
+        element: (
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            minHeight: '80vh',
+            padding: '40px',
+            background: '#f5f5f5'
+          }}>
+            <img 
+              src={IMG2} 
+              alt="Help & Support" 
+              style={{ 
+                maxWidth: '100%', 
+                width: '1200px',
+                height: 'auto',
+                borderRadius: '20px',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.15)'
+              }} 
+            />
+          </div>
+        )
       },
     ]
   },

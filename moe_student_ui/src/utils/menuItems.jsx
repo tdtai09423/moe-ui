@@ -12,7 +12,7 @@ export const ADMIN_MENU = [
 ];
 
 export const USER_MENU = [
-  { key: '/', icon: <HomeOutlined />, label: 'Dashboard' },
+  { key: '/dashboard', icon: <HomeOutlined />, label: 'Dashboard' },
   { key: '/balance', icon: <WalletOutlined />, label: 'Account Balance' },
   { key: '/courses', icon: <ReadOutlined />, label: 'Your Courses' },
   { key: '/profile', icon: <UserOutlined />, label: 'My Profile' },
