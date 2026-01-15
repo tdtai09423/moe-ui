@@ -1,0 +1,123 @@
+// --- Variables ---
+$color-primary: #117a65;
+$color-primary-hover: #0e6655;
+$color-bg-icon: #e9f2f0;
+$color-text-main: #111827;
+$color-text-sub: #6b7280;
+$color-label: #9ca3af;
+$color-border: #e5e7eb;
+$color-bg-page: #f9fafb;
+$color-bg-alert: #f3f4f6;
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// --- GLOBAL COMPONENT STYLES ---
+// 1. Profile Card 
+.profileCard {
+  background: #fff;
+  border: 1px solid $color-border;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  margin-bottom: 24px;
+  overflow: hidden;
+
+  :global {
+    .ant-card-body { padding: 0; }
+  }
+
+  // Header (cardHeader)
+  .cardHeader {
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    &.isBordered { border-bottom: 1px solid $color-border; }
+
+    .iconContainer { 
+      width: 48px; height: 48px;
+      background-color: $color-bg-icon;
+      border-radius: 12px;
+      margin-right: 16px;
+      flex-shrink: 0;
+      @include flex-center;
+
+      :global(.anticon) { font-size: 24px; color: $color-primary; }
+    }
+
+    .headerContent {
+      flex: 1; padding-top: 2px;
+      h3 { margin: 0 0 4px 0; font-size: 16px; font-weight: 600; color: $color-text-main; }
+      span { font-size: 14px; color: $color-text-sub; }
+    }
+
+    .headerActions {
+      .btnEdit {
+        height: 36px; padding: 0 16px; border-radius: 6px; font-weight: 500;
+        color: $color-text-main; border-color: $color-border;
+        &:hover { color: $color-primary; border-color: $color-primary; }
+      }
+    }
+  }
+
+  // Content
+  .cardContent { padding: 24px 32px; }
+
+  // Info Field (infoField)
+  .infoField {
+    margin-bottom: 8px;
+    label {
+      display: block; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; color: $color-label;
+      margin-bottom: 8px; letter-spacing: 0.05em;
+    }
+    .value {
+      font-size: 16px; color: $color-text-main; font-weight: 400;
+      &.valueBold { font-weight: 500; } 
+    }
+  }
+
+ 
+  :global {
+    .ant-form-item { margin-bottom: 0; }
+    .ant-form-item-label > label { font-size: 14px; font-weight: 500; color: $color-text-main; }
+    .ant-input, .ant-input-affix-wrapper { border-radius: 6px; padding: 5px 12px; }
+  }
+
+  // Footer Actions
+  .formFooter {
+    margin-top: 32px; padding-top: 24px; border-top: 1px solid $color-border;
+    display: flex; justify-content: flex-end; gap: 12px;
+    
+    .btnSave { 
+        background-color: $color-primary; border-color: $color-primary; 
+        color: #fff;
+        &:hover { background-color: $color-primary-hover; border-color: $color-primary-hover; }
+    }
+    .btnCancel {
+        height: 40px; padding: 0 20px; border-radius: 6px; font-weight: 500;
+        border-color: $color-border; color: $color-text-main;
+        &:hover { color: $color-primary; border-color: $color-primary; }
+    }
+  }
+}
+
+// --- PAGE SPECIFIC STYLES ---
+.userProfilePage {
+  background-color: $color-bg-page;
+  min-height: 100vh;
+  padding: 40px 24px;
+  font-family: "Inter", sans-serif;
+
+  .pageContainer { max-width: 900px; margin: 0 auto; }
+
+  .pageHeader {
+    margin-bottom: 32px;
+    h1 { font-size: 24px; font-weight: 700; color: $color-text-main; margin-bottom: 4px; }
+    p { color: $color-text-sub; font-size: 14px; }
+  }
+}
