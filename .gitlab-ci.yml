@@ -1,43 +1,44 @@
-image: mcr.microsoft.com/devcontainers/javascript-node:24
+variables:
+  NPM_CONFIG_YES: "true"
+  CI: "false"
 
 stages:
   - build
   - deploy
 
-variables:
-  NPM_CONFIG_YES: "true"
-  CI: "false"
-
 default:
   tags:
-    - dind-test
-
+    - moe-kain
 
 # ==================== BUILD FE ADMIN ====================
 build_admin_ui:
   stage: build
   script:
+    - Write-Host "Entering directory moe_admin_ui..."
     - cd moe_admin_ui
-    - node -v
     - npm install
     - npm run build
   artifacts:
     paths:
       - moe_admin_ui/dist/
     expire_in: 1 hour
+  only:
+    - main
 
 # ==================== BUILD FE USER ====================
 build_student_ui:
   stage: build
   script:
+    - Write-Host "Entering directory moe_student_ui..."
     - cd moe_student_ui
-    - node -v
     - npm install
     - npm run build
   artifacts:
     paths:
       - moe_student_ui/dist/
     expire_in: 1 hour
+  only:
+    - main
 
 # ==================== DEPLOY TO AZURE SWA ====================
 
@@ -46,11 +47,15 @@ deploy_fe_admin:
   dependencies:
     - build_admin_ui
   script:
-    - echo "Checking deployment folder..."
-    - ls -la ./moe_admin_ui/dist
-    - echo "Deploying FE Admin to Azure Static Web App..."
-    # Sử dụng npx --yes để chắc chắn không bị dừng ở bước hỏi cài đặt gói
-    - npx --yes @azure/static-web-apps-cli deploy ./moe_admin_ui/dist --deployment-token $AZURE_SWA_ADMIN_TOKEN --env production
+    - Write-Host "Checking for swa command path..."
+    - Get-Command swa | Select-Object -ExpandProperty Source
+    
+    - Write-Host "Checking deployment folder..."
+    - if (Test-Path "./moe_admin_ui/dist") { Get-ChildItem ./moe_admin_ui/dist } else { Write-Error "Folder dist not found!"; exit 1 }
+    
+    - Write-Host "Deploying FE Admin to Azure Static Web App..."
+    # Sử dụng trực tiếp lệnh swa thay vì npx
+    - swa deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production
   when: manual
   only:
     - main
@@ -60,10 +65,14 @@ deploy_fe_user:
   dependencies:
     - build_student_ui
   script:
-    - echo "Checking deployment folder..."
-    - ls -la ./moe_student_ui/dist
-    - echo "Deploying FE User to Azure Static Web App..."
-    - npx --yes @azure/static-web-apps-cli deploy ./moe_student_ui/dist --deployment-token $AZURE_SWA_STUDENT_TOKEN --env production
+    - Write-Host "Checking for swa command path..."
+    - Get-Command swa | Select-Object -ExpandProperty Source
+    
+    - Write-Host "Checking deployment folder..."
+    - if (Test-Path "./moe_student_ui/dist") { Get-ChildItem ./moe_student_ui/dist } else { Write-Error "Folder dist not found!"; exit 1 }
+    
+    - Write-Host "Deploying FE User to Azure Static Web App..."
+    - swa deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production
   when: manual
   only:
     - main

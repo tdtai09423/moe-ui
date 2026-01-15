@@ -11,10 +11,13 @@ import {
   Row,
   Space,
   notification,
+  message,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import styles from "./styles/AccountCreate.module.scss";
 import { useAccounts } from "../../../hooks/accounts/useAccount";
+import dayjs from "dayjs";
+
 const { Option } = Select;
 
 const AccountCreate = ({ open, onClose }) => {
@@ -26,13 +29,17 @@ const AccountCreate = ({ open, onClose }) => {
     try {
       const nric = form.getFieldValue("nric");
       const data = await getAccountNRIC(nric);
+      if (!nric) {
+        message.error("Please input nric!");
+      }
       console.log(data);
       form.setFieldsValue({
         fullName: data.fullName,
-        dob: data.dateOfBirth,
+        dob: data.dateOfBirth ? dayjs(data.dateOfBirth, "YYYY-MM-DD") : null,
         email: data.email,
         phone: data.phoneNumber,
         registeredAddress: data.registeredAddress,
+        residentialStatus:data.residentialStatus,
       });
       setIsVerify(true);
     } catch (err) {
@@ -51,6 +58,11 @@ const AccountCreate = ({ open, onClose }) => {
     setIsVerify(false);
   };
 
+  const closeHandle = () => {
+    handleReset();
+    onClose();
+  };
+
   const onFinish = async (values) => {
     try {
       const payload = {
@@ -62,6 +74,7 @@ const AccountCreate = ({ open, onClose }) => {
         educationLevel: values.educationLevel,
         registeredAddress: values.registeredAddress,
         mailingAddress: values.mailingAddress,
+        residentialStatus:values.residentialStatus,
       };
       const res = await createAccount(payload);
       notification.success({
@@ -86,7 +99,7 @@ const AccountCreate = ({ open, onClose }) => {
   return (
     <Modal
       open={open}
-      onCancel={onClose}
+      onCancel={closeHandle}
       footer={null}
       width={640}
       centered
@@ -106,29 +119,23 @@ const AccountCreate = ({ open, onClose }) => {
         className={styles.form}
         onFinish={onFinish}
       >
-        <Row gutter={16}>
+        <Row gutter={15}>
           {/* Cột cho NRIC và nút Verify */}
           <Col span={12}>
-            <Form.Item label="NRIC *" required>
+            <Form.Item
+              label="NRIC *"
+              name="nric"
+              rules={[{ required: true, message: "Please input NRIC!" }]}
+              help={
+                isVerify ? (
+                  <span style={{ color: "#52c41a" }}>✓ NRIC verified</span>
+                ) : null
+              }
+            >
               <Space.Compact style={{ width: "100%" }}>
-                <Form.Item
-                  name="nric"
-                  noStyle
-                  rules={[{ required: true, message: "Please input NRIC!" }]}
-                  help={
-                    isVerify ? (
-                      <span style={{ color: "#52c41a" }}>✓ NRIC verified</span>
-                    ) : null
-                  }
-                >
-                  <Input placeholder="Enter NRIC" />
-                </Form.Item>
+                <Input placeholder="Enter NRIC" />
                 {!isVerify ? (
-                  <Button
-                    type="primary"
-                    loading={loading}
-                    onClick={handleVerify}
-                  >
+                  <Button type="primary" onClick={handleVerify}>
                     Verify
                   </Button>
                 ) : (
@@ -152,29 +159,21 @@ const AccountCreate = ({ open, onClose }) => {
           </Col>
 
           <Col span={12}>
-            <Form.Item
-              label="Date of Birth *"
-              name="dob"
-              rules={[{ required: true }]}
-            >
+            <Form.Item label="Date of Birth *" name="dob">
               <DatePicker
                 className="dobPicker"
                 style={{ width: "100%" }}
                 placeholder="DD/MM/YY"
-                format="DD/MM/YY"
+                format="DD/MM/YYYY"
                 allowClear={false}
-                disabled={!isVerify}
-                readOnly={isVerify}
+                inputReadOnly
+                open={false}
               />
             </Form.Item>
           </Col>
 
           <Col span={12}>
-            <Form.Item
-              label="Email *"
-              name="email"
-              rules={[{ required: true, type: "email" }]}
-            >
+            <Form.Item label="Email *" name="email">
               <Input
                 placeholder="email@example.com"
                 disabled={!isVerify}
@@ -192,32 +191,57 @@ const AccountCreate = ({ open, onClose }) => {
           />
         </Form.Item>
 
-        <Form.Item label="Education Level" name="educationLevel">
+        <Form.Item
+          label="Education Level"
+          name="educationLevel"
+          rules={[
+            { required: true, message: "Please select education level!" },
+          ]}
+          lassName={styles.educationSelect}
+        >
           <Select placeholder="Select level">
-            <Option value="primary">Primary</Option>
-            <Option value="secondary">Secondary</Option>
-            <Option value="tertiary">Tertiary</Option>
+            <Option value="Primary">Primary</Option>
+            <Option value="Secondary">Secondary</Option>
+            <Option value="Post-secondary">Post-secondary</Option>
+            <Option value="Tertiary">Tertiary</Option>
+            <Option value="Post-graduate">Post-graduate</Option>
           </Select>
+        </Form.Item>
+
+        <Form.Item label="Residential Status" name="residentialStatus">
+          <Input
+            placeholder="Auto filled registered address"
+            disabled={!isVerify}
+            readOnly={isVerify}
+          />
         </Form.Item>
 
         <Form.Item label="Registered Address" name="registeredAddress">
           <Input
-            placeholder="Enter registered address"
+            placeholder="Auto filled registered address"
             disabled={!isVerify}
             readOnly={isVerify}
           />
         </Form.Item>
 
-        <Form.Item label="Mailing Address" name="mailingAddress">
+        <Form.Item
+          label="Mailing Address"
+          name="mailingAddress"
+          rules={[
+            isVerify && {
+              required: true,
+              message: "Please input mailing address!",
+            },
+          ]}
+        >
           <Input
-            placeholder="Enter mailing address (if different)"
+            placeholder="Auto filled mailing address (if different)"
             disabled={!isVerify}
-            readOnly={isVerify}
           />
         </Form.Item>
 
         <div className={styles.footer}>
-          <Button onClick={onClose} className={styles.cancelBtn}>
+          <Button onClick={closeHandle} className={styles.cancelBtn}>
             Cancel
           </Button>
           <Button
@@ -225,6 +249,7 @@ const AccountCreate = ({ open, onClose }) => {
             htmlType="submit"
             icon={<PlusOutlined />}
             className={styles.createBtn}
+            loading={loading}
           >
             Create Account
           </Button>

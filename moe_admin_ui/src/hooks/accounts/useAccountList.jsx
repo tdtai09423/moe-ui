@@ -9,8 +9,8 @@ const DEFAULT_FILTER = {
   EducationLevel: [],
   SchoolingStatus: "",
   ResidentialStatus: [],
-  MinBlance: null,
-  MaxBlance: null,
+  MinBalance: null,
+  MaxBalance: null,
   MinAge: null,
   MaxAge: null,
 //   SortBy: "",
@@ -27,8 +27,9 @@ export const useAccountList = () => {
     setLoading(true);
     try {
       const result = await accountService.getListAccount(customFilter);
-      setData(result.items);
-      setTotal(result.total);
+      console.log(result.data);
+      setData(result.data.items);
+      setTotal(result.data.totalCount);
     } finally {
       setLoading(false);
     }

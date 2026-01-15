@@ -4,7 +4,8 @@ import { accountService } from "../../services/accountService";
 export const useAccounts = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState();
-  const [data, setData] = useState([]);
+  const [data, setData] = useState();
+  const [accountInfo, setAccountInfo] = useState(null);
 
   const getAccountNRIC = async (id) => {
     if (!id) return;
@@ -13,7 +14,8 @@ export const useAccounts = () => {
     setError(null);
     try {
       const res = await accountService.getAccountByResident(id);
-      setData(res.data);
+      console.log("verify:", res.data)
+      return res.data;
     } catch (err) {
       setError(err);
     } finally {
@@ -37,7 +39,24 @@ export const useAccounts = () => {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  return { loading, data, error,reset, getAccountNRIC, createAccount };
+  const getAccountByID = async (id) => {
+    if (!id) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await accountService.getAccountById(id);
+      console.log(res);
+      setAccountInfo(res.data);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { loading, data, error, accountInfo, reset, getAccountNRIC, createAccount, getAccountByID};
 };

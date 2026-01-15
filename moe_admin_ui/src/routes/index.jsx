@@ -6,20 +6,21 @@ import IntroducePage from "../pages/Introduce/IntroducePage.jsx";
 import AccountManage from "../pages/accounts/AccountManage";
 import StudentDetailPage from "../pages/accounts/components/AccountDetail.jsx";
 import CourseManagement from "../pages/courses/CourseManagement";
+import Dashboard from '../pages/Dashboard/Dashboard';
 
 //Pages
 
 export const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <AdminLayout />,
     children: [
       {
         index: true, // Đây là trang sẽ hiện ra khi vào địa chỉ "/"
-        element: <div>Trang Dashboard</div>,
+        element: <Dashboard/>
       },
       {
-        path: "/accounts",
+        path: "accounts",
         children: [
           {
             index: true,
@@ -47,16 +48,16 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: "/introduce",
+    path: '/introduce',
     children: [
       {
         index: true,
-        element: <IntroducePage />,
-      },
-    ],
+        element: <IntroducePage />
+      }
+    ]
   },
   {
-    path: "*",
-    element: <Navigate to="/" replace />,
-  },
+    path: '*',
+    element: <Navigate to="/" replace />
+  }
 ]);
