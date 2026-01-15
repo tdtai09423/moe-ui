@@ -58,7 +58,7 @@ deploy_fe_admin:
     - Write-Host "Checking deployment folder..."
     - Get-ChildItem ./moe_admin_ui/dist
     - Write-Host "Deploying FE Admin to Azure Static Web App..."
-    - npx --yes @azure/static-web-apps-cli deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production
+    - swa deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production
   when: manual
   only:
     - main
@@ -69,9 +69,9 @@ deploy_fe_user:
     - build_student_ui
   script:
     - Write-Host "Checking deployment folder..."
-    - Get-ChildItem ./moe_student_ui/dist
+    - if (Test-Path "./moe_student_ui/dist") { Get-ChildItem ./moe_student_ui/dist } else { Write-Error "Folder dist not found!"; exit 1 }
     - Write-Host "Deploying FE User to Azure Static Web App..."
-    - npx --yes @azure/static-web-apps-cli deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production
+    - swa deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production --non-interactive
   when: manual
   only:
     - main
