@@ -14,12 +14,9 @@ default:
 build_admin_ui:
   stage: build
   script:
-    - "Write-Host 'Entering directory moe_admin_ui...'"
     - "cd moe_admin_ui"
     - "npm install"
     - "npm run build"
-    - "if (Test-Path 'dist') { Get-ChildItem 'dist' } else { Write-Error 'Build failed: dist folder not found'; exit 1 }"
-    - "cd .."
   artifacts:
     paths:
       - moe_admin_ui/dist/
@@ -31,12 +28,9 @@ build_admin_ui:
 build_student_ui:
   stage: build
   script:
-    - "Write-Host 'Entering directory moe_student_ui...'"
     - "cd moe_student_ui"
     - "npm install"
     - "npm run build"
-    - "if (Test-Path 'dist') { Get-ChildItem 'dist' } else { Write-Error 'Build failed: dist folder not found'; exit 1 }"
-    - "cd .."
   artifacts:
     paths:
       - moe_student_ui/dist/
@@ -52,10 +46,14 @@ deploy_fe_admin:
   dependencies:
     - build_admin_ui
   script:
-    - "Write-Host 'Checking for swa command path...'"
-    - "Get-Command swa | Select-Object -ExpandProperty Source"
-    - "Write-Host 'Checking deployment folder...'"
-    - "if (Test-Path './moe_admin_ui/dist') { Get-ChildItem ./moe_admin_ui/dist } else { Write-Error 'Folder dist not found in artifacts!'; exit 1 }"
+    - "Write-Host 'Refreshing environment variables...'"
+    # Lệnh này giúp cập nhật lại PATH trong phiên làm việc hiện tại của Runner
+    - "$env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')"
+    
+    - "Write-Host 'Checking for swa command...'"
+    # Sử dụng 'Get-Command swa -ErrorAction SilentlyContinue' để tránh crash job nếu không thấy
+    - "if (!(Get-Command swa -ErrorAction SilentlyContinue)) { Write-Error 'SWA CLI not found in PATH. Please restart GitLab Runner service.'; exit 1 }"
+    
     - "Write-Host 'Deploying FE Admin to Azure Static Web App...'"
     - "swa deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production"
   when: manual
@@ -68,10 +66,12 @@ deploy_fe_user:
   dependencies:
     - build_student_ui
   script:
-    - "Write-Host 'Checking for swa command path...'"
-    - "Get-Command swa | Select-Object -ExpandProperty Source"
-    - "Write-Host 'Checking deployment folder...'"
-    - "if (Test-Path './moe_student_ui/dist') { Get-ChildItem ./moe_student_ui/dist } else { Write-Error 'Folder dist not found in artifacts!'; exit 1 }"
+    - "Write-Host 'Refreshing environment variables...'"
+    - "$env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')"
+    
+    - "Write-Host 'Checking for swa command...'"
+    - "if (!(Get-Command swa -ErrorAction SilentlyContinue)) { Write-Error 'SWA CLI not found in PATH. Please restart GitLab Runner service.'; exit 1 }"
+    
     - "Write-Host 'Deploying FE User to Azure Static Web App...'"
     - "swa deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production"
   when: manual
