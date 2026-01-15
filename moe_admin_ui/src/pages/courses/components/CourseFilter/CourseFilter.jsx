@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // Added useEffect
 import { Input, Select, DatePicker, Button, InputNumber } from 'antd';
 import {
     SearchOutlined,
@@ -16,8 +16,12 @@ import styles from './CourseFilter.module.scss';
 
 const { Option } = Select;
 
+import { courseService } from '../../../../services/courseService';
+
+
 const CourseFilter = ({ filters, onFilterChange }) => {
     const [hoveredFilters, setHoveredFilters] = useState({});
+    const [providersList, setProvidersList] = useState([]); 
 
     const handleFilterChange = (key, value) => {
         onFilterChange({ ...filters, [key]: value });
@@ -27,16 +31,21 @@ const CourseFilter = ({ filters, onFilterChange }) => {
         setHoveredFilters(prev => ({ ...prev, [key]: value }));
     };
 
-    const providers = [
-        'Nanyang Technological University',
-        'National University of Singapore',
-        'Singapore Management University',
-        'Singapore Polytechnic',
-        'Temasek Polytechnic'
-    ];
+    useEffect(() => {
+        const fetchProviders = async () => {
+            try {
+                const res = await courseService.getProviders();
+                setProvidersList(res || []);
+            } catch (error) {
+                console.error('Failed to load providers', error);
+                message.error('Failed to load providers filter');
+            }
+        };
+        fetchProviders();
+    }, []);
 
     const modes = ['Online', 'In-Person', 'Hybrid'];
-    const paymentTypes = ['Recurring', 'One Time'];
+    const paymentTypes = ['Recurring', 'One-time'];
     const billingCycles = ['Monthly', 'Quarterly', 'Yearly'];
     const statuses = ['Active', 'Inactive'];
 
@@ -81,9 +90,9 @@ const CourseFilter = ({ filters, onFilterChange }) => {
                         <Option value="" label="All Providers">
                             {renderCustomOption("All Providers", "", "provider", filters.provider === "")}
                         </Option>
-                        {providers.map(p => (
-                            <Option key={p} value={p} label={p}>
-                                {renderCustomOption(p, p, "provider", filters.provider === p)}
+                        {providersList.map(p => (
+                            <Option key={p.providerId} value={p.providerId} label={p.providerName}>
+                                {renderCustomOption(p.providerName, p.providerId, "provider", filters.provider?.includes(p.providerId))}
                             </Option>
                         ))}
                     </Select>

@@ -14,6 +14,8 @@ import {
 import dayjs from 'dayjs';
 import styles from './AddCourseModal.module.scss';
 
+import { courseService } from '../../../../services/courseService';
+
 const { Text } = Typography;
 
 const AddCourseModal = ({ open, onClose, onAdd }) => {
@@ -24,6 +26,8 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
     const [isReviewStep, setIsReviewStep] = useState(false);
     const [feeEntryMode, setFeeEntryMode] = useState('per_cycle'); // 'per_cycle' | 'total'
     const [isHovering, setIsHovering] = useState(false);
+    const [providersList, setProvidersList] = useState([]);
+    const [submitting, setSubmitting] = useState(false);
 
     // Watch form values
     const courseStartDate = Form.useWatch('startDate', form);
@@ -32,30 +36,22 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
     const paymentOption = Form.useWatch('paymentOption', form);
     const inputValue = Form.useWatch('fee', form);
 
-    const providers = [
-        'Nanyang Technological University',
-        'National University of Singapore',
-        'Singapore Management University',
-        'Singapore Polytechnic',
-        'Temasek Polytechnic'
-    ];
-
     const modeOptions = [
-        { label: 'Online', value: 'Online' },
-        { label: 'In-Person', value: 'In-Person' },
-        { label: 'Hybrid', value: 'Hybrid' }
+        { label: 'Online', value: 'online' },
+        { label: 'In-Person', value: 'in-person' },
+        { label: 'Hybrid', value: 'hybrid' }
     ];
 
     const paymentOptions = [
         { label: 'Recurring', value: 'Recurring' },
-        { label: 'One Time', value: 'One Time' }
+        { label: 'One Time', value: 'One-time' }
     ];
 
     const billingCycleOptions = [
         { label: 'Monthly', value: 'Monthly' },
         { label: 'Quarterly', value: 'Quarterly' },
-        { label: 'Bi-annually', value: 'Bi-annually' },
-        { label: 'Annually', value: 'Annually' }
+        { label: 'Bi-annually', value: 'Biannually' },
+        { label: 'Annually', value: 'Yearly' }
     ];
 
     // Helper: Reset State when modal closes
@@ -69,8 +65,27 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
             form.setFieldsValue({
                 status: 'Active'
             });
+            fetchProviders();
         }
     }, [open, form]);
+
+    const fetchProviders = async () => {
+        try {
+            const res = await courseService.getProviders();
+            setProvidersList(res || []);
+        } catch (error) {
+            messageApi.error('Failed to load providers');
+        }
+    };
+
+    const [formData, setFormData] = useState({});
+
+    // Unified Values (Fix for useWatch undefined when Form unmounts)
+    const activeStartDate = isReviewStep ? formData.startDate : courseStartDate;
+    const activeEndDate = isReviewStep ? formData.endDate : courseEndDate;
+    const activeBillingCycle = isReviewStep ? formData.billingCycle : billingCycle;
+    const activePaymentOption = isReviewStep ? formData.paymentOption : paymentOption;
+    const activeFee = isReviewStep ? formData.fee : inputValue;
 
     // Helper: Logic from scan.tsx
     const calculateCycles = (start, end, cycle) => {
@@ -84,15 +99,15 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
         switch (cycle) {
             case 'Monthly': return monthsDiff;
             case 'Quarterly': return Math.ceil(monthsDiff / 3);
-            case 'Bi-annually': return Math.ceil(monthsDiff / 6);
-            case 'Annually': return Math.ceil(monthsDiff / 12);
+            case 'Biannually': return Math.ceil(monthsDiff / 6);
+            case 'Yearly': return Math.ceil(monthsDiff / 12);
             default: return 1;
         }
     };
 
     const getCourseDurationMonths = () => {
-        if (!courseStartDate || !courseEndDate) return 0;
-        return dayjs(courseEndDate).diff(dayjs(courseStartDate), 'month') + 1;
+        if (!activeStartDate || !activeEndDate) return 0;
+        return dayjs(activeEndDate).diff(dayjs(activeStartDate), 'month') + 1;
     };
 
     const isBillingCycleValid = (cycle) => {
@@ -101,30 +116,28 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
         switch (cycle) {
             case 'Monthly': return months >= 1;
             case 'Quarterly': return months >= 3;
-            case 'Bi-annually': return months >= 6;
-            case 'Annually': return months >= 12;
+            case 'Biannually': return months >= 6;
+            case 'Yearly': return months >= 12;
             default: return true;
         }
     };
 
     const calculateFeePerCycle = () => {
-        if (feeEntryMode === 'per_cycle' || !inputValue) return inputValue;
-        const cycles = calculateCycles(courseStartDate, courseEndDate, billingCycle);
-        return (parseFloat(inputValue) / cycles).toFixed(2);
+        if (feeEntryMode === 'per_cycle' || !activeFee) return activeFee;
+        const cycles = calculateCycles(activeStartDate, activeEndDate, activeBillingCycle);
+        return (parseFloat(activeFee) / cycles).toFixed(2);
     };
 
     const calculateTotalFee = () => {
-        if (feeEntryMode === 'total' || !inputValue) return inputValue;
-        const cycles = calculateCycles(courseStartDate, courseEndDate, billingCycle);
-        return (parseFloat(inputValue) * cycles).toFixed(2);
+        if (feeEntryMode === 'total' || !activeFee) return activeFee;
+        const cycles = calculateCycles(activeStartDate, activeEndDate, activeBillingCycle);
+        return (parseFloat(activeFee) * cycles).toFixed(2);
     };
 
-    // Actions
     const handleProceedToReview = async () => {
         try {
             await form.validateFields();
 
-            // Custom Validation matching scan.tsx
             const finalFee = feeEntryMode === 'per_cycle' ? inputValue : calculateFeePerCycle();
             if (!finalFee || parseFloat(finalFee) <= 0) {
                 messageApi.error('Please enter a valid fee amount');
@@ -135,33 +148,38 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                 return;
             }
 
+            setFormData(form.getFieldsValue(true));
             setIsReviewStep(true);
         } catch (error) {
             console.error('Validation failed:', error);
         }
     };
 
-    const handleConfirmAdd = () => {
-        const values = form.getFieldsValue();
+    const handleConfirmAdd = async () => {
+        const values = formData;
 
-        // Match API payload expected by CourseManagement.jsx handleAddCourse
+        const selectedProvider = providersList.find(p => p.providerId === values.provider);
         const data = {
             name: values.courseName,
-            provider: values.provider,
+            providerId: values.provider,
+            providerName: selectedProvider ? selectedProvider.providerName : '',
             mode: values.mode,
             startDate: values.startDate,
             endDate: values.endDate,
             payment: { Type: values.paymentOption },
-            billingCycle: values.paymentOption === 'One Time' ? null : values.billingCycle,
-            feePerCycle: feeEntryMode === 'per_cycle' ? values.fee : calculateFeePerCycle(),
-            totalFee: feeEntryMode === 'total' ? values.fee : calculateTotalFee(),
+            billingCycle: values.paymentOption === 'One-time' ? null : values.billingCycle,
+            feePerCycle: feeEntryMode === 'per_cycle' ? null : calculateFeePerCycle(),
+            totalFee: feeEntryMode === 'total' ? null : calculateTotalFee(),
             status: values.status
         };
-
-        onAdd(data);
+        setSubmitting(true);
+        try {
+            await onAdd(data);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
-    // Render Helpers
     const renderOption = (option, fieldName) => {
         const isSelected = form.getFieldValue(fieldName) === option.value;
         return (
@@ -210,7 +228,7 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                                 <Select
                                     placeholder="Select school"
                                     optionRender={(opt) => renderOption(opt, 'provider')}
-                                    options={providers.map(p => ({ label: p, value: p }))}
+                                    options={providersList.map(p => ({ label: p.providerName, value: p.providerId }))}
                                     popupClassName={styles.selectDropdown}
                                 />
                             </Form.Item>
@@ -265,7 +283,6 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                                     />
                                 </Form.Item>
 
-                                {/* Show Billing Cycle ONLY if Payment Option is selected as Recurring */}
                                 {paymentOption === 'Recurring' && (
                                     <Form.Item label="Billing Cycle" name="billingCycle" rules={[{ required: true }]} required>
                                         <Select
@@ -280,7 +297,6 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                                     </Form.Item>
                                 )}
 
-                                {/* Show Fee Input for Recurring ONLY if Billing Cycle is selected */}
                                 {paymentOption === 'Recurring' && billingCycle && (
                                     <div className={styles.feeToggleContainer}>
                                         <div className={styles.toggleButtons}>
@@ -329,8 +345,7 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                                     </div>
                                 )}
 
-                                {/* Show Fee Input for One Time immediately */}
-                                {paymentOption === 'One Time' && (
+                                {paymentOption === 'One-time' && (
                                     <Form.Item label="Course Fee" name="fee" rules={[{ required: true }]}>
                                         <Input type="number" prefix="$" placeholder="0.00" />
                                     </Form.Item>
@@ -345,52 +360,93 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                             </div>
                         </Form>
                     ) : (
-                        // REVIEW STEP
                         <div className={styles.reviewStep}>
                             <div className={styles.reviewContent}>
-                                <div className={styles.reviewSection}>
-                                    <Text type="secondary"><CalendarOutlined /> Course Name</Text>
-                                    <Text strong>{form.getFieldValue('courseName')}</Text>
-                                </div>
-                                <div className={styles.reviewSection}>
-                                    <Text type="secondary">Provider</Text>
-                                    <Text strong>{form.getFieldValue('provider')}</Text>
-                                </div>
-                                <div className={styles.reviewRow}>
-                                    <div>
-                                        <Text type="secondary">Start Date</Text>
-                                        <div><Text strong>{dayjs(courseStartDate).format('DD MMM YYYY')}</Text></div>
-                                    </div>
-                                    <div>
-                                        <Text type="secondary">End Date</Text>
-                                        <div><Text strong>{dayjs(courseEndDate).format('DD MMM YYYY')}</Text></div>
-                                    </div>
-                                </div>
 
-                                <Divider />
-
-                                <div className={styles.reviewSection}>
-                                    <Text type="secondary">Payment Structure</Text>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <Text strong>{paymentOption} {paymentOption === 'Recurring' && `(${billingCycle})`}</Text>
+                                <div className={styles.reviewSectionGroup}>
+                                    <div className={styles.groupHeader}>
+                                        <div style={{ transform: 'rotate(-10deg)', display: 'inline-block' }}>🎓</div> Course Information
                                     </div>
-                                </div>
-
-                                <div className={styles.reviewRow}>
-                                    <div>
-                                        <Text type="secondary">{paymentOption === 'Recurring' ? `Fee Per ${billingCycle}` : 'Course Fee'}</Text>
-                                        <div style={{ fontSize: '1.1em', color: '#10b981', fontWeight: 'bold' }}>
-                                            ${feeEntryMode === 'per_cycle' || paymentOption === 'One Time' ? parseFloat(inputValue).toFixed(2) : calculateFeePerCycle()}
+                                    <div className={styles.infoGrid}>
+                                        <div className={styles.infoRow}>
+                                            <span className={styles.label}>Course Name:</span>
+                                            <span className={styles.value}>{formData.courseName}</span>
+                                        </div>
+                                        <div className={styles.infoRow}>
+                                            <span className={styles.label}>Provider:</span>
+                                            <span className={styles.value}>
+                                                {providersList.find(p => p.providerId === formData.provider)?.providerName || formData.provider}
+                                            </span>
+                                        </div>
+                                        <div className={styles.infoRow}>
+                                            <span className={styles.label}>Mode of Training:</span>
+                                            <span className={styles.value}>{formData.mode}</span>
+                                        </div>
+                                        <div className={styles.infoRow}>
+                                            <span className={styles.label}>Status:</span>
+                                            <span className={`${styles.statusBadge} ${formData.status === 'Active' ? styles.statusActive : styles.statusInactive}`}>
+                                                {formData.status}
+                                            </span>
                                         </div>
                                     </div>
-                                    {paymentOption === 'Recurring' && (
-                                        <div>
-                                            <Text type="secondary">Total Fee</Text>
-                                            <div style={{ fontSize: '1.1em', fontWeight: 'bold' }}>
-                                                ${feeEntryMode === 'total' ? parseFloat(inputValue).toFixed(2) : calculateTotalFee()}
-                                            </div>
+                                </div>
+
+                                <div className={styles.reviewSectionGroup}>
+                                    <div className={styles.groupHeader}>
+                                        <CalendarOutlined /> Course Schedule
+                                    </div>
+                                    <div className={styles.infoGrid}>
+                                        <div className={styles.infoRow}>
+                                            <span className={styles.label}>Start Date:</span>
+                                            <span className={styles.value}>{activeStartDate ? dayjs(activeStartDate).format('DD/MM/YY') : '-'}</span>
                                         </div>
-                                    )}
+                                        <div className={styles.infoRow}>
+                                            <span className={styles.label}>End Date:</span>
+                                            <span className={styles.value}>{activeEndDate ? dayjs(activeEndDate).format('DD/MM/YY') : '-'}</span>
+                                        </div>
+                                        <div className={styles.infoRow}>
+                                            <span className={styles.label}>Duration:</span>
+                                            <span className={styles.value}>
+                                                {getCourseDurationMonths()} month{getCourseDurationMonths() !== 1 ? 's' : ''}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className={`${styles.reviewSectionGroup} ${styles.feeCard}`}>
+                                    <div className={styles.groupHeader}>
+                                        <DollarOutlined /> Fee Information
+                                    </div>
+                                    <div className={styles.infoGrid}>
+                                        <div className={styles.infoRow}>
+                                            <span className={styles.label}>Payment Type:</span>
+                                            <span className={styles.value}>
+                                                {paymentOptions.find(p => p.value === activePaymentOption)?.label || activePaymentOption}
+                                            </span>
+                                        </div>
+                                        {activePaymentOption === 'Recurring' && (
+                                            <>
+                                                <div className={styles.infoRow}>
+                                                    <span className={styles.label}>Billing Cycle:</span>
+                                                    <span className={styles.value}>
+                                                        {billingCycleOptions.find(b => b.value === activeBillingCycle)?.label || activeBillingCycle}
+                                                    </span>
+                                                </div>
+                                                <div className={styles.infoRow}>
+                                                    <span className={styles.label}>Number of Cycles:</span>
+                                                    <span className={styles.value}>{calculateCycles(activeStartDate, activeEndDate, activeBillingCycle)}</span>
+                                                </div>
+                                                <div className={styles.infoRow}>
+                                                    <span className={styles.label}>Fee per Cycle:</span>
+                                                    <span className={styles.value} style={{ fontWeight: 'bold', color: '#162f69' }}>${calculateFeePerCycle()}</span>
+                                                </div>
+                                            </>
+                                        )}
+                                        <div className={styles.infoRow}>
+                                            <span className={styles.label}>Total Course Fee:</span>
+                                            <span className={styles.value}>${feeEntryMode === 'total' || activePaymentOption === 'One-time' ? parseFloat(activeFee || 0).toFixed(2) : calculateTotalFee()}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -398,7 +454,7 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                                 <Button onClick={() => setIsReviewStep(false)} className={styles.cancelButton}>
                                     <ArrowLeftOutlined /> Back to Edit
                                 </Button>
-                                <Button type="primary" onClick={handleConfirmAdd} className={styles.submitButton}>
+                                <Button type="primary" onClick={handleConfirmAdd} loading={submitting} className={styles.submitButton}>
                                     Confirm & Create <CheckCircleOutlined />
                                 </Button>
                             </div>

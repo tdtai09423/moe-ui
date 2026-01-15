@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { Button, Table, Tag, Spin, Alert, App } from 'antd';
+import { Button, Table, Tag, Spin, Alert, message } from 'antd';
 import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
 import AddCourseModal from './components/AddCourseModal/AddCourseModal';
 import CourseFilter from './components/CourseFilter/CourseFilter';
@@ -15,7 +15,7 @@ dayjs.extend(isSameOrBefore);
 dayjs.extend(customParseFormat);
 
 const CourseManagement = () => {
-    const { notification } = App.useApp();
+    const [messageApi, contextHolder] = message.useMessage();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -47,11 +47,11 @@ const CourseManagement = () => {
                 PageNumber: pagination.current,
                 PageSize: pagination.pageSize,
                 SearchTerm: filters.search || undefined,
-                Provider: filters.provider.length ? filters.provider : undefined,
-                ModeOfTraining: filters.mode.length ? filters.mode : undefined,
-                Status: filters.status.length ? filters.status : undefined,
-                PaymentType: filters.paymentType.length ? filters.paymentType : undefined,
-                BillingCycle: filters.billingCycle.length ? filters.billingCycle : undefined,
+                Provider: filters.provider?.length ? filters.provider : undefined,
+                ModeOfTraining: filters.mode?.length ? filters.mode : undefined,
+                Status: filters.status?.length ? filters.status : undefined,
+                PaymentType: filters.paymentType?.length ? filters.paymentType : undefined,
+                BillingCycle: filters.billingCycle?.length ? filters.billingCycle : undefined,
                 StartDate: filters.startDate ? dayjs(filters.startDate).format('YYYY-MM-DD') : undefined,
                 EndDate: filters.endDate ? dayjs(filters.endDate).format('YYYY-MM-DD') : undefined,
                 TotalFeeMin: filters.minFee || undefined,
@@ -61,7 +61,6 @@ const CourseManagement = () => {
             };
             const res = await courseService.getListCourses(params);
 
-            // Response structure: { items: [], totalCount: 0, ... }
             const items = res.items || [];
             const total = res.totalCount || 0;
 
@@ -98,7 +97,8 @@ const CourseManagement = () => {
         try {
             const payload = {
                 courseName: values.name,
-                providerName: values.provider,
+                providerId: values.providerId,
+                providerName: values.providerName,
                 modeOfTraining: values.mode,
                 courseStartDate: values.startDate ? dayjs(values.startDate).toISOString() : null,
                 courseEndDate: values.endDate ? dayjs(values.endDate).toISOString() : null,
@@ -106,15 +106,16 @@ const CourseManagement = () => {
                 billingCycle: values.billingCycle,
                 totalFee: parseFloat(values.totalFee),
                 feePerCycle: parseFloat(values.feePerCycle),
-                status: 'Inactive'
+                status: values.status // Use status from modal
             };
 
             await courseService.createCourse(payload);
-            notification.success({ message: 'Success', description: 'Course added successfully' });
+            messageApi.success('Course added successfully');
             setIsModalOpen(false);
             fetchCourses();
         } catch (err) {
-            notification.error({ message: 'Error', description: err.message || 'Failed to create course' });
+            console.error(err);
+            messageApi.error(err.message || 'Failed to create course');
         }
     };
 
@@ -124,7 +125,6 @@ const CourseManagement = () => {
             current: pagination.current,
             pageSize: pagination.pageSize
         }));
-        // Logic to handle sorting can be added here if needed to update API params
     };
 
     const handleOpenModal = () => {
@@ -209,17 +209,10 @@ const CourseManagement = () => {
 
     return (
         <div className={styles.courseManagementContainer}>
+            {contextHolder}
             <div className={styles.pageHeader}>
                 <div className={styles.headerTop}>
                     <h1 className={styles.pageTitle}> Course Management </h1>
-                    <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    className={styles.addButton}
-                    onClick={handleOpenModal}
-                    >
-                        Add Course
-                    </Button>
                 </div>
                 <p className={styles.pageDescription}>
                     Manage courses and student enrollments. Click on a course to view details.
@@ -233,6 +226,23 @@ const CourseManagement = () => {
                     setPagination(prev => ({ ...prev, current: 1 })); // Reset to page 1 on filter
                 }}
             />
+
+            <div className={styles.actionButtons} style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                <Button
+                    icon={<UploadOutlined />}
+                    className={styles.importButton}
+                >
+                    Import CSV/Excel
+                </Button>
+                <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    className={styles.addButton}
+                    onClick={handleOpenModal}
+                >
+                    Add Course
+                </Button>
+            </div>
 
             {error && (
                 <Alert

@@ -315,32 +315,99 @@
             animation: fadeIn 0.3s ease;
 
             .reviewContent {
-                margin-top: 1rem;
+                margin-top: 0.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
             }
 
-            .reviewSection {
-                margin-bottom: 1.25rem;
+            .reviewSectionGroup {
+                .groupHeader {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-bottom: 0.75rem;
+                    font-size: 0.95rem;
+                    font-weight: 600;
 
-                :global(.ant-typography-secondary) {
-                    display: block;
-                    font-size: 0.8rem;
-                    margin-bottom: 0.25rem;
-                    color: #8590a3;
+                    :global(.anticon) {
+                        font-size: 1.1rem;
+                    }
                 }
 
-                :global(.ant-typography strong) {
-                    font-size: 0.95rem;
+                .infoGrid {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    gap: 0.75rem;
+                    padding: 0 0.5rem;
+                }
+
+                .infoRow {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 0.875rem;
+
+                    .label {
+                        color: $color-text-sub;
+                    }
+
+                    .value {
+                        color: $color-text-main;
+                        font-weight: 500;
+                        text-align: right;
+                    }
+
+                    .statusBadge {
+                        margin: 0;
+                        padding: 0 8px;
+                        height: 22px;
+                        line-height: 22px;
+                        border-radius: 11px;
+                        font-size: 0.75rem;
+                        font-weight: 500;
+
+                        &.statusActive {
+                            background-color: rgba(#10b981, 0.1);
+                            color: #10b981;
+                            border: 1px solid rgba(#10b981, 0.2);
+                        }
+
+                        &.statusInactive {
+                            background-color: rgba(#ef4444, 0.1);
+                            color: #ef4444;
+                            border: 1px solid rgba(#ef4444, 0.2);
+                        }
+                    }
+                }
+            }
+
+            .feeCard {
+                background-color: #f1f5f9;
+                border-radius: $radius-base;
+                padding: 1rem;
+                border: 1px solid #e2e8f0;
+
+                .groupHeader {
+                    margin-bottom: 1rem;
                     color: $color-text-main;
                 }
-            }
 
-            .reviewRow {
-                display: flex;
-                gap: 2rem;
-                margin-bottom: 1.25rem;
+                .infoRow {
+                    margin-bottom: 0.5rem;
 
-                >div {
-                    flex: 1;
+                    &:last-child {
+                        margin-bottom: 0;
+                        padding-top: 0.75rem;
+                        margin-top: 0.5rem;
+                        border-top: 1px solid #cbd5e1;
+
+                        .label,
+                        .value {
+                            font-weight: 700;
+                            font-size: 1rem;
+                        }
+                    }
                 }
             }
         }
