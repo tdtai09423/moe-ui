@@ -1,46 +1,75 @@
-import { Table } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Spin, Table } from 'antd';
 import { FundViewOutlined } from '@ant-design/icons';
+import { dashboardService } from '../../services/dashboardService';
 import styles from './LatestAccountCreation.module.scss';
 
 const LatestAccountCreation = () => {
-    // Mock Data cập nhật theo hình + thêm giờ để hiển thị
-    const data = [
-        {
-            key: '1',
-            name: 'Lim Jia Hui',
-            email: 'jiahui.lim@yahoo.com',
-            createdDate: '14/01/26',
-            createdTime: '09:15:00', // Giả lập giờ
-        },
-        {
-            key: '2',
-            name: 'Julian Tan',
-            email: 'julian.tan@email.com',
-            createdDate: '13/01/26',
-            createdTime: '14:30:00',
-        },
-        {
-            key: '3',
-            name: 'KAIN TRAN',
-            email: 'FDLSJDF@GMAIL.COM',
-            createdDate: '12/01/26',
-            createdTime: '11:00:00',
-        },
-        {
-            key: '4',
-            name: 'Huy Dao',
-            email: 'c-tracy.tran@avepoint.com',
-            createdDate: '12/01/26',
-            createdTime: '10:45:00',
-        },
-        {
-            key: '5',
-            name: 'Thu Trang',
-            email: 'trangthhu@gmail.com',
-            createdDate: '12/01/26',
-            createdTime: '08:20:00',
-        },
-    ];
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const fetchActivities = async () => {
+        setLoading(true);
+        try {
+            const response = await dashboardService.getLatestAccountCreation();
+            setData(response || []);
+        } catch (error) {
+            console.error("Failed to fetch Latest Account Creation: ", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchActivities();
+    }, []);
+
+    const formatDateTime = (isoString) => {
+        if (!isoString) return { date: '-', time: '-' };
+        const dateObj = new Date(isoString);
+        return {
+            date: dateObj.toLocaleDateString('en-GB'),
+            time: dateObj.toLocaleTimeString('en-GB', { hour12: false }).split(':').slice(0, 2).join(':')
+        };
+    };
+
+    // const data = [
+    //     {
+    //         key: '1',
+    //         name: 'Lim Jia Hui',
+    //         email: 'jiahui.lim@yahoo.com',
+    //         createdDate: '14/01/26',
+    //         createdTime: '09:15:00',
+    //     },
+    //     {
+    //         key: '2',
+    //         name: 'Julian Tan',
+    //         email: 'julian.tan@email.com',
+    //         createdDate: '13/01/26',
+    //         createdTime: '14:30:00',
+    //     },
+    //     {
+    //         key: '3',
+    //         name: 'KAIN TRAN',
+    //         email: 'FDLSJDF@GMAIL.COM',
+    //         createdDate: '12/01/26',
+    //         createdTime: '11:00:00',
+    //     },
+    //     {
+    //         key: '4',
+    //         name: 'Huy Dao',
+    //         email: 'c-tracy.tran@avepoint.com',
+    //         createdDate: '12/01/26',
+    //         createdTime: '10:45:00',
+    //     },
+    //     {
+    //         key: '5',
+    //         name: 'Thu Trang',
+    //         email: 'trangthhu@gmail.com',
+    //         createdDate: '12/01/26',
+    //         createdTime: '08:20:00',
+    //     },
+    // ];
 
     const columns = [
         {
@@ -57,13 +86,17 @@ const LatestAccountCreation = () => {
         },
         {
             title: 'Created',
-            key: 'created',
-            render: (_, record) => (
-                <div className={styles.dateTime}>
-                    <span className={styles.date}>{record.createdDate}</span>
-                    <span className={styles.time}>{record.createdTime}</span>
-                </div>
-            ),
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            render: (createdAt) => {
+                const { date, time } = formatDateTime(createdAt);
+                return (
+                    <div className={styles.dateTime}>
+                        <span className={styles.date}>{date}</span>
+                        <span className={styles.time}>{time}</span>
+                    </div>
+                );
+            },
         },
     ];
 
@@ -81,12 +114,15 @@ const LatestAccountCreation = () => {
                 </div>
             </div>
 
-            <Table
-                columns={columns}
-                dataSource={data}
-                pagination={false}
-                className={styles.customTable}
-            />
+            <Spin spinning={loading}>
+                <Table
+                    columns={columns}
+                    dataSource={data}
+                    rowKey={(record) => record.accountId}
+                    pagination={false}
+                    className={styles.customTable}
+                />
+            </Spin>
         </div>
     );
 };

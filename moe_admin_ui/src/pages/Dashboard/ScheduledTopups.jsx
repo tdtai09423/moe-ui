@@ -1,87 +1,118 @@
-import React, { useState } from 'react'; // Đừng quên import useState
-import { Table, Tag, Button } from "antd";
+import React, { useState, useEffect } from 'react';
+import { Table, Tag, Button, Spin } from "antd";
 import { CalendarOutlined, UserOutlined, TeamOutlined } from "@ant-design/icons";
+import { dashboardService } from "../../services/dashboardService"
 import styles from "./ScheduledTopups.module.scss";
 
 const ScheduledTopups = () => {
     const [viewType, setViewType] = useState('batch');
-    
-    // Data cho Batch
-    const batchData = [
-        {
-            key: '1',
-            accounts: 1,
-            ruleName: 'All junior Singapore Citizens (Aged 18-25)',
-            amount: 500.00,
-            scheduledDate: '30/01/26',
-            scheduledTime: '09:00:00',
-            status: 'Scheduled',
-        },
-        {
-            key: '2',
-            accounts: 2,
-            ruleName: 'Senior AI Training Policies',
-            amount: 1000.00,
-            scheduledDate: '02/03/26',
-            scheduledTime: '14:00:00',
-            status: 'Scheduled',
-        },
-    ];
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    // Data cho Individual (Dựa trên hình ảnh bạn cung cấp)
-    const individualData = [
-        {
-            key: 'i1',
-            name: 'Huy Dao',
-            amount: 1000.00,
-            scheduledDate: '16/01/26',
-            scheduledTime: '09:00:00',
-            status: 'Scheduled',
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const typeId = viewType === 'batch' ? 0 : 1;
+            const response = await dashboardService.getScheduledTopups(typeId);
+            setData(response || []); 
         }
-    ];
+        catch (error) {
+            console.error("Failed to fetch Scheduled Top-ups: ", error);
+            setData([]);
+        }
+        finally {
+            setLoading(false);
+        }
+    };
 
-    // Cấu hình columns cho Batch
+    useEffect(() => {
+        fetchData();
+    }, [viewType]);
+    
+    const formatDateTime = (isoString) => {
+        if (!isoString) return { date: '-', time: '-' };
+        const dateObj = new Date(isoString);
+        const date = dateObj.toLocaleDateString('en-GB');
+        const time = dateObj.toLocaleTimeString('en-GB', { hour12: false });
+        return { date, time };
+    };
+
+    // const batchData = [
+    //     {
+    //         key: '1',
+    //         accounts: 1,
+    //         ruleName: 'All junior Singapore Citizens (Aged 18-25)',
+    //         amount: 500.00,
+    //         scheduledDate: '30/01/26',
+    //         scheduledTime: '09:00:00',
+    //         status: 'Scheduled',
+    //     },
+    //     {
+    //         key: '2',
+    //         accounts: 2,
+    //         ruleName: 'Senior AI Training Policies',
+    //         amount: 1000.00,
+    //         scheduledDate: '02/03/26',
+    //         scheduledTime: '14:00:00',
+    //         status: 'Scheduled',
+    //     },
+    // ];
+
+    // const individualData = [
+    //     {
+    //         key: 'i1',
+    //         name: 'Huy Dao',
+    //         amount: 1000.00,
+    //         scheduledDate: '16/01/26',
+    //         scheduledTime: '09:00:00',
+    //         status: 'Scheduled',
+    //     }
+    // ];
+
     const batchColumns = [
         {
             title: 'Rule Name',
-            dataIndex: 'ruleName',
-            key: 'ruleName',
+            dataIndex: 'name',
+            key: 'name',
             render: (text, record) => (
                 <div className={styles.ruleColumn}>
                     <span className={styles.ruleName}>{text}</span>
-                    <span className={styles.accountCount}>{record.accounts} accounts</span>
+                    <span className={styles.accountCount}>{record.accounts || 0} accounts</span>
                 </div>
             ),
         },
         {
             title: 'Amount',
-            dataIndex: 'amount',
-            key: 'amount',
-            render: (amount) => <span className={styles.amountText}>${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>,
+            dataIndex: 'topUpAmount',
+            key: 'topUpAmount',
+            render: (amount) => <span className={styles.amountText}>${(amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>,
         },
         {
             title: 'Scheduled',
-            key: 'scheduled',
-            render: (_, record) => (
-                <div className={styles.dateTime}>
-                    <span>{record.scheduledDate}</span>
-                    <span className={styles.time}>{record.scheduledTime}</span>
-                </div>
-            ),
+            dataIndex: 'scheduledTime',
+            key: 'scheduledTime',
+            render: (text) => {
+                const { date, time } = formatDateTime(text);
+                return (
+                    <div className={styles.dateTime}>
+                        <span>{date}</span>
+                        <span className={styles.time}>{time}</span>
+                    </div>
+                );
+            },
         },
         {
             title: 'Top up Status',
             dataIndex: 'status',
             key: 'status',
             render: (status) => (
-                <Tag className={styles.statusTag} bordered={false}>
+                <Tag className={styles.statusTag} variant="filled">
                     {status}
                 </Tag>
             ),
         },
     ];
 
-    // Cấu hình columns cho Individual
     const individualColumns = [
         {
             title: 'Name',
@@ -91,26 +122,30 @@ const ScheduledTopups = () => {
         },
         {
             title: 'Amount',
-            dataIndex: 'amount',
-            key: 'amount',
+            dataIndex: 'topUpAmount',
+            key: 'topUpAmount',
             render: (amount) => <span className={styles.amountText}>${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>,
         },
         {
             title: 'Scheduled',
-            key: 'scheduled',
-            render: (_, record) => (
-                <div className={styles.dateTime}>
-                    <span>{record.scheduledDate}</span>
-                    <span className={styles.time}>{record.scheduledTime}</span>
-                </div>
-            ),
+            dataIndex: 'scheduledTime',
+            key: 'scheduledTime',
+            render: (text) => {
+                const { date, time } = formatDateTime(text);
+                return (
+                    <div className={styles.dateTime}>
+                        <span>{date}</span>
+                        <span className={styles.time}>{time}</span>
+                    </div>
+                );
+            },
         },
         {
             title: 'Top up Status',
             dataIndex: 'status',
             key: 'status',
             render: (status) => (
-                <Tag className={styles.statusTag} bordered={false}>
+                <Tag className={styles.statusTag} variant="filled">
                     {status}
                 </Tag>
             ),
@@ -148,12 +183,15 @@ const ScheduledTopups = () => {
                     </Button>
                 </div>
                 
-                <Table
-                    columns={viewType === 'batch' ? batchColumns : individualColumns}
-                    dataSource={viewType === 'batch' ? batchData : individualData}
-                    pagination={false}
-                    className={styles.customTable}
-                />
+                <Spin spinning={loading}>
+                    <Table
+                        columns={viewType === 'batch' ? batchColumns : individualColumns}
+                        dataSource={data}
+                        rowKey={(record) => record.id || record.key}
+                        pagination={false}
+                        className={styles.customTable}
+                    />
+                </Spin>
             </div>
         </div>
     );
