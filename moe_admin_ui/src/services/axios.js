@@ -38,7 +38,7 @@ api.interceptors.response.use(
 
         console.log({ "status": status, "message": message })
 
-        // Catch error here
+        //  Catch error here
 
         return Promise.reject(error);
     }

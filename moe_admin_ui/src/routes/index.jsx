@@ -1,7 +1,12 @@
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import AdminLayout from '../layouts';
+import AdminLayout from '../layouts/AdminLayout.jsx';
 import Dashboard from '../pages/Dashboard/Dashboard';
+import IntroducePage from '../pages/Introduce/IntroducePage.jsx';
+import AccountManage from '../pages/accounts/AccountManage';
+import StudentDetailPage from '../pages/accounts/components/AccountDetail.jsx';
+
+//Pages
 
 export const router = createBrowserRouter([
   {
@@ -13,8 +18,26 @@ export const router = createBrowserRouter([
         element: <Dashboard/>
       },
       {
-        path: '/accounts',
-        element: <div>Trang Quản lý User</div>
+        path: "accounts",
+        children: [
+          {
+            index: true,
+            element: <AccountManage />,
+          },
+          {
+            path: ":id",
+            element: <StudentDetailPage />,
+          },
+        ],
+      },
+    ]
+  },
+  {
+    path: '/introduce',
+    children: [
+      {
+        index: true,
+        element: <IntroducePage />
       }
     ]
   },

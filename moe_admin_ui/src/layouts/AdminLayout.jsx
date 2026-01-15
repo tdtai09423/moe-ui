@@ -6,6 +6,7 @@ import SharedHeader from './Header/MainHeader';
 import AdminSidebar from './Sidebar/Sidebar';
 import styles from './index.module.scss';
 
+
 const { Sider, Content } = Layout;
 
 const AdminLayout = () => {
@@ -23,7 +24,7 @@ const AdminLayout = () => {
 
       <Layout className={styles.layoutContentWrapper}>
         {/* Sidebar cứng cho Desktop */}
-        <Sider width={260} theme="light" trigger={null} className={styles.layoutSider}>
+        <Sider width={300} theme="light" trigger={null} className={styles.layoutSider}>
           <AdminSidebar />
         </Sider>
 

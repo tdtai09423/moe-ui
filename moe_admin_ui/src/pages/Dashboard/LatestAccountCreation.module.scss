@@ -2,9 +2,9 @@
     background: #ffffff;
     border-radius: 8px;
     padding: 24px;
-    border: 1px solid #e0e0e0;
-    // Box shadow nhẹ cho giống style card hiện đại
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border-style: solid;
+    border-color: #e1e7ef;
+    border-width: 1px;
 
     .header {
         display: flex;
