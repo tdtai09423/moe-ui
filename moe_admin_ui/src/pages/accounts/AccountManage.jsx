@@ -101,8 +101,8 @@ const AccountManage = () => {
                 onChange={(value) => updateFilter({ SchoolingStatus: value })}
                 options={[
                   { value: "", label: "All Student" },
-                  { value: "InSchool", label: "In school" },
-                  { value: "NotInSchool", label: "Not in school" },
+                  { value: "0", label: "In school" },
+                  { value: "1", label: "Not in school" },
                 ]}
               />
             </div>
