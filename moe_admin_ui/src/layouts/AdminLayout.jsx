@@ -24,7 +24,7 @@ const AdminLayout = () => {
 
       <Layout className={styles.layoutContentWrapper}>
         {/* Sidebar cứng cho Desktop */}
-        <Sider width={260} theme="light" trigger={null} className={styles.layoutSider}>
+        <Sider width={300} theme="light" trigger={null} className={styles.layoutSider}>
           <AdminSidebar />
         </Sider>
 

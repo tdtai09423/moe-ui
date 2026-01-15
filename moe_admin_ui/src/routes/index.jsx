@@ -1,7 +1,10 @@
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import AdminLayout from '../layouts/AdminLayout';
+import AdminLayout from '../layouts/AdminLayout.jsx';
+import Dashboard from '../pages/Dashboard/Dashboard';
 import IntroducePage from '../pages/Introduce/IntroducePage.jsx';
+import AccountManage from '../pages/accounts/AccountManage';
+import StudentDetailPage from '../pages/accounts/components/AccountDetail.jsx';
 
 //Pages
 
@@ -11,13 +14,22 @@ export const router = createBrowserRouter([
     element: <AdminLayout />,
     children: [
       {
-        index: true, 
-        element: <div>Trang Dashboard</div>
+        index: true, // Đây là trang sẽ hiện ra khi vào địa chỉ "/"
+        element: <Dashboard/>
       },
       {
-        path: '/accounts',
-        element: <div>Trang Quản lý User</div>
-      }
+        path: "accounts",
+        children: [
+          {
+            index: true,
+            element: <AccountManage />,
+          },
+          {
+            path: ":id",
+            element: <StudentDetailPage />,
+          },
+        ],
+      },
     ]
   },
   {

@@ -1,0 +1,94 @@
+.addStudentModal {
+  :global {
+    .ant-modal-content {
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .ant-modal-close {
+      top: 20px;
+      right: 20px;
+    }
+  }
+}
+
+.header {
+  margin-bottom: 24px;
+
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #0f172a;
+  }
+
+  p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+  }
+}
+
+.form {
+  .ant-form-item {
+    margin-bottom: 16px;
+  }
+
+  .ant-input,
+  .ant-picker,
+  .ant-select-selector {
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    padding: 0 14px;
+  }
+
+  .ant-input::placeholder {
+    color: #94a3b8;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancelBtn {
+  height: 44px;
+  border-radius: 10px;
+  padding: 0 20px;
+}
+
+.createBtn {
+  height: 44px;
+  border-radius: 10px;
+  padding: 0 20px;
+  background: #0f766e;
+  border-color: #0f766e;
+
+  &:hover {
+    background: #115e59 !important;
+    border-color: #115e59 !important;
+  }
+}
+
+.educationSelect {
+  :global {
+    .ant-select-item {
+      transition: all 0.2s ease;
+    }
+
+    .ant-select-item-option-active {
+      background: linear-gradient(90deg, #e6f4ff, #f0faff);
+      color: #1677ff;
+    }
+  }
+}
