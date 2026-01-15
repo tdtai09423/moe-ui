@@ -70,14 +70,11 @@ const AccountManage = () => {
             <div style={{ flex: 1 }}>
               <span className={styles.filterLabel}>Education Level</span>
               <Select
+                placeholder="--Select Education Level--"
                 mode="multiple"
                 className={styles.customSelect}
                 showSearch={false}
-                value={
-                  filter.EducationLevel.length === 0
-                    ? [null]
-                    : filter.EducationLevel
-                }
+                value={filter.EducationLevel} 
                 onChange={(values) =>
                   handleMultiSelectWithAll(
                     values,
@@ -86,7 +83,7 @@ const AccountManage = () => {
                   )
                 }
                 options={[
-                   { value: "ALL", label: "All Levels" },
+                  { value: "ALL", label: "All Levels" },
                   { value: "0", label: "Primary" },
                   { value: "1", label: "Secondary" },
                   { value: "2", label: "Post-secondary" },
@@ -98,25 +95,25 @@ const AccountManage = () => {
             <div style={{ flex: 1 }}>
               <span className={styles.filterLabel}>Schooling Status</span>
               <Select
+                placeholder="--Select Schooling Status--"
                 className={styles.customSelect}
                 value={filter.SchoolingStatus}
                 onChange={(value) => updateFilter({ SchoolingStatus: value })}
                 options={[
-                  { value: null, label: "All Student" },
-                  { value: "In school", label: "In school" },
-                  { value: "Not in school", label: "Not in school" },
+                  { value: "", label: "All Student" },
+                  { value: "InSchool", label: "In school" },
+                  { value: "NotInSchool", label: "Not in school" },
                 ]}
               />
             </div>
             <div style={{ flex: 1 }}>
               <span className={styles.filterLabel}>Residential Status</span>
               <Select
+                placeholder="--Residential Status--"
                 mode="multiple"
                 className={styles.customSelect}
                 showSearch={false}
-                value={
-                  filter.ResidentialStatus
-                }
+                value={filter.ResidentialStatus}
                 onChange={(values) =>
                   handleMultiSelectWithAll(
                     values,
@@ -142,14 +139,14 @@ const AccountManage = () => {
                   placeholder="Min"
                   className={styles.customInput}
                   value={filter.MinBalance}
-                  onChange={(e) => updateFilter({ MinBlance: e.target.value })}
+                  onChange={(e) => updateFilter({ MinBalance: e.target.value })}
                 />
                 <span>-</span>
                 <Input
                   placeholder="Max"
                   className={styles.customInput}
-                  value={filter.MaxBlance}
-                  onChange={(e) => updateFilter({ MaxBlance: e.target.value })}
+                  value={filter.MaxBalance}
+                  onChange={(e) => updateFilter({ MaxBalance: e.target.value })}
                 />
               </Flex>
             </div>
@@ -171,14 +168,7 @@ const AccountManage = () => {
                 />
               </Flex>
             </div>
-            <div style={{ alignSelf: "flex-end" }}>
-              <Select
-                suffixIcon={<SwapOutlined rotate={90} />}
-                defaultValue="name"
-                style={{ width: 140 }}
-                options={[{ value: "name", label: "Name (A-Z)" }]}
-              />
-            </div>
+           
           </Flex>
         </div>
 
@@ -203,7 +193,6 @@ const AccountManage = () => {
             onRow={(record) => ({
               style: { cursor: "pointer" },
               onClick: () => {
-                
                 navigate(`/accounts/${record.id}`);
               },
             })}

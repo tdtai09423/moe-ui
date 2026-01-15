@@ -29,7 +29,7 @@ const AccountCreate = ({ open, onClose }) => {
     try {
       const nric = form.getFieldValue("nric");
       const data = await getAccountNRIC(nric);
-      if (!data) {
+      if (!nric) {
         message.error("Please input nric!");
       }
       console.log(data);
