@@ -14,7 +14,8 @@ const ScheduledTopups = () => {
         try {
             const typeId = viewType === 'batch' ? 0 : 1;
             const response = await dashboardService.getScheduledTopups(typeId);
-            setData(response || []); 
+            const dataArray = Array.isArray(response) ? response : (response?.data || []);
+            setData(dataArray); 
         }
         catch (error) {
             console.error("Failed to fetch Scheduled Top-ups: ", error);

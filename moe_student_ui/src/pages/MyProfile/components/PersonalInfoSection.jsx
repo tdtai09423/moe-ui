@@ -38,6 +38,8 @@ const PersonalInfoSection = ({ profileData }) => {
           <InfoItem label="Account Created" value={formatDate(profileData?.accountCreated)} />
           <InfoItem label="Schooling Status" value={profileData?.schoolingStatus || '-'} />
           <InfoItem label="Education Level" value={profileData?.educationLevel || '-'} />
+          <InfoItem label="Residential Status" value={profileData?.residentialStatus || '-'} />
+
         </Row>
       </div>
     </Card>

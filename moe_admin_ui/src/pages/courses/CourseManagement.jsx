@@ -61,8 +61,9 @@ const CourseManagement = () => {
             };
             const res = await courseService.getListCourses(params);
 
-            const items = res.items || [];
-            const total = res.totalCount || 0;
+            // Ensure data is always an array
+            const items = Array.isArray(res?.items) ? res.items : (Array.isArray(res) ? res : []);
+            const total = res?.totalCount || 0;
 
             setCourses(items);
             setPagination(prev => ({ ...prev, total: total }));

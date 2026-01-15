@@ -14,7 +14,7 @@ const MainHeader = ({ toggleMobile }) => {
       <div className={styles.headerLeft}>
         {toggleMobile}
         <div 
-          onClick={() => navigate('/')} 
+          onClick={() => navigate('/dashboard')} 
           style={{ 
             display: 'flex', 
             alignItems: 'center', 

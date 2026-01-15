@@ -63,6 +63,9 @@ const PendingFees = () => {
         pagination={{ pageSize: 5 }}
         className={styles.customTable}
         scroll={{ x: 1000 }}
+        onRow={() => ({
+          style: { cursor: 'pointer' }
+        })}
       />
     </div>
   );

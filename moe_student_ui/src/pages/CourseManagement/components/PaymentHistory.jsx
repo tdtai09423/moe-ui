@@ -43,6 +43,9 @@ const PaymentHistory = () => {
         pagination={{ pageSize: 5 }}
         className={styles.customTable}
         scroll={{ x: 800 }}
+        onRow={() => ({
+          style: { cursor: 'pointer' }
+        })}
       />
     </div>
   );

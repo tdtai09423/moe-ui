@@ -1,10 +1,11 @@
 import {
   AppstoreOutlined, UserOutlined, WalletOutlined,
-  ReadOutlined, SettingOutlined, HomeOutlined, QuestionCircleOutlined
+  ReadOutlined, SettingOutlined, HomeOutlined, QuestionCircleOutlined,
+  DashboardOutlined
 } from '@ant-design/icons';
 
 export const ADMIN_MENU = [
-  { key: '/', icon: <AppstoreOutlined />, label: 'Dashboard' },
+  { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
   { key: '/accounts', icon: <UserOutlined />, label: 'Account Management' },
   { key: '/topup', icon: <WalletOutlined />, label: 'Top-up Management' },
   { key: '/courses', icon: <ReadOutlined />, label: 'Course Management' },

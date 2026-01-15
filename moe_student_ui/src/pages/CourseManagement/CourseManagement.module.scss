@@ -58,13 +58,13 @@ $shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
     position: relative;
     overflow: hidden;
 
-    // Hiệu ứng hover nảy nhẹ
+
     &:hover {
       transform: translateY(-4px);
       box-shadow: $shadow-hover;
     }
 
-    // Thanh màu trang trí bên trái
+
     &::before {
       content: '';
       position: absolute;
@@ -74,12 +74,12 @@ $shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
       width: 4px;
     }
 
-    // Card Outstanding có vạch cam
+
     &:first-child::before {
       background: $warning-orange;
     }
 
-    // Card Balance có vạch xanh
+
     &:last-child::before {
       background: $primary-teal;
     }
@@ -93,7 +93,7 @@ $shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
       justify-content: center;
       font-size: 24px;
 
-      // Icon nền gradient nhẹ
+
       &.orange {
         background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
         color: $warning-orange;
@@ -139,7 +139,7 @@ $shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
   border-radius: $card-radius;
   box-shadow: $shadow-soft;
   padding: 32px;
-  border: 1px solid rgba(0, 0, 0, 0.02); // Viền siêu mờ
+  border: 1px solid rgba(0, 0, 0, 0.02); 
 
   .sectionHeader {
     display: flex;
@@ -156,7 +156,6 @@ $shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
         font-size: 20px;
         padding: 10px;
         border-radius: 12px;
-        // Nền icon tiêu đề
         background: #f8fafc;
       }
 
@@ -226,6 +225,12 @@ $shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
         white-space: nowrap;
       }
 
+
+      .ant-table-tbody>tr {
+        cursor: pointer; 
+        transition: all 0.2s;
+      }
+
       .ant-table-tbody>tr>td {
         padding: 20px 24px;
         font-size: 14px;
@@ -237,7 +242,7 @@ $shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
       // Hover hàng bảng
       .ant-table-tbody>tr:hover>td {
         background: #f1f5f9 !important;
-        cursor: default;
+        cursor: pointer; 
       }
 
       .ant-table-tbody>tr:last-child>td {

@@ -2,6 +2,7 @@ import React from 'react';
 import { Table, Tag } from 'antd';
 import { ReadOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom'; 
+import StatusTag from '../../../components/common/StatusTag/StatusTag';
 import styles from '../Dashboard.module.scss';
 
 const CoursesTable = ({ data, loading = false }) => {
@@ -27,25 +28,10 @@ const CoursesTable = ({ data, loading = false }) => {
     { title: 'Billing Date', dataIndex: 'billingDate', key: 'billingDate', width: 130 },
     {
       title: 'Payment Status',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'paymentStatus',
+      key: 'paymentStatus',
       width: 150,
-      render: (status) => {
-        let color = status === 'Outstanding' ? 'orange' : 'success';
-        const customStyle = status === 'Outstanding' ? {
-             color: '#d46b08', background: '#fff7e6', borderColor: '#ffbb96',
-        } : {
-             color: '#389e0d', background: '#f6ffed', borderColor: '#b7eb8f',
-        };
-
-        return (
-          <Tag style={{ 
-              ...customStyle, borderRadius: '12px', padding: '2px 12px', fontWeight: 600, fontSize: '12px', margin: 0
-          }}>
-            {status}
-          </Tag>
-        );
-      },
+      render: (paymentStatus) => <StatusTag status={paymentStatus} />,
     },
   ];
 
@@ -55,7 +41,7 @@ const CoursesTable = ({ data, loading = false }) => {
           <div className={styles.sectionTitle}>
               <ReadOutlined style={{color: '#0f766e'}} /> Your Courses
           </div>
-          <a href="#" className={styles.viewAllLink}>
+          <a onClick={() => navigate('/courses')} className={styles.viewAllLink} style={{ cursor: 'pointer' }}>
             View all <ArrowRightOutlined />
           </a>
       </div>

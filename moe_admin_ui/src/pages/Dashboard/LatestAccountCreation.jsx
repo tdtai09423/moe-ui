@@ -12,9 +12,11 @@ const LatestAccountCreation = () => {
         setLoading(true);
         try {
             const response = await dashboardService.getLatestAccountCreation();
-            setData(response || []);
+            const dataArray = Array.isArray(response) ? response : (response?.data || []);
+            setData(dataArray);
         } catch (error) {
             console.error("Failed to fetch Latest Account Creation: ", error);
+            setData([]);
         } finally {
             setLoading(false);
         }

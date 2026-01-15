@@ -28,8 +28,15 @@ export const useAccountList = () => {
     try {
       const result = await accountService.getListAccount(customFilter);
       console.log(result.data);
-      setData(result.data.items);
-      setTotal(result.data.totalCount);
+      // Ensure data is always an array
+      const items = result.data?.items || result?.items || [];
+      const totalCount = result.data?.totalCount || result?.totalCount || 0;
+      setData(Array.isArray(items) ? items : []);
+      setTotal(totalCount);
+    } catch (error) {
+      console.error("Failed to fetch account list:", error);
+      setData([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }

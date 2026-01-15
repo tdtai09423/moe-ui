@@ -220,7 +220,8 @@ $shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03);
   }
 
   .amountText {
-    color: $primary-green;
+    
+    color: $primary-green !important; 
     font-weight: 700;
   }
 }
@@ -287,6 +288,7 @@ $shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03);
         color: $text-main;
         font-size: 15px;
         margin-bottom: 2px;
+        text-align: center;
       }
 
       .status {
@@ -294,7 +296,119 @@ $shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03);
         color: $text-sub;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        text-align: center;
+
       }
+    }
+  }
+}
+
+// --- 7. OUTSTANDING FEES TABLE (New Block) ---
+.outstandingTable {
+  border: 1px solid #e2e8f0; // Viền bảng nhạt
+  border-radius: 12px;
+  overflow: hidden;
+
+  :global {
+    .ant-table-thead > tr > th {
+      background: #ffffff; // Header nền trắng
+      color: #1e293b;
+      font-weight: 700;
+      font-size: 13px;
+      border-bottom: 1px solid #f1f5f9;
+      padding: 16px 24px;
+    }
+
+    .ant-table-tbody > tr > td {
+      padding: 20px 24px;
+      border-bottom: 1px solid #f8fafc;
+      vertical-align: middle !important;
+    }
+    
+    // Hover hiệu ứng
+    .ant-table-tbody > tr:hover > td {
+      background: #f8fafc !important;
+    }
+  }
+
+
+  .courseCell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    
+    .name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    
+    .provider {
+      font-size: 13px;
+      color: #64748b; 
+    }
+  }
+
+
+  .amountText {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 15px;
+  }
+  
+  .cycleText, .dateText {
+    color: #64748b;
+    font-size: 14px;
+  }
+
+
+  .dueDateCell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .date {
+      font-weight: 600;
+      color: #1e293b;
+    }
+    
+    .daysLeft {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+  }
+
+
+  .statusBadge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+    
+    &.outstanding {
+      background-color: #fff7ed; 
+      color: #ea580c;            
+      border: 1px solid #ffedd5;
+    }
+  }
+
+
+  .payNowBtn {
+    background-color: #0f766e; 
+    border-color: #0f766e;
+    font-weight: 600;
+    border-radius: 8px;
+    height: 36px;
+    padding: 0 20px;
+    box-shadow: 0 2px 5px rgba(15, 118, 110, 0.2);
+    
+    &:hover {
+      background-color: #115e59 !important;
+      border-color: #115e59 !important;
+      transform: translateY(-1px);
     }
   }
 }
