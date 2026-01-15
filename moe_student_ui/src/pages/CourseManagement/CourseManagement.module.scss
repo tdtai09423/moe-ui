@@ -1,0 +1,307 @@
+@use '../../assets/styles/_variables' as *;
+
+// --- VARIABLES ---
+$primary-teal: #0f766e;
+$primary-green: #10b981; // Xanh lá tươi hơn
+$warning-orange: #f59e0b; // Cam tươi hơn
+$bg-app: #f1f5f9;
+$card-radius: 20px;
+$inner-radius: 16px;
+$border-color: #e2e8f0;
+$shadow-soft: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+$shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding-bottom: 60px;
+  font-family: 'Inter', sans-serif;
+}
+
+// --- 1. HEADER & SUBTITLE ---
+.pageHeader {
+  margin-bottom: 0px; // Giảm margin vì thẻ stat đã có shadow
+
+  h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+    letter-spacing: -0.5px;
+  }
+
+  p {
+    color: #64748b;
+    font-size: 15px;
+    margin-top: 6px;
+  }
+}
+
+// --- 2. TOP STATS ROW (STYLE MỚI: SẠCH & HIỆN ĐẠI) ---
+.statsRow {
+  display: flex;
+  gap: 24px;
+
+  .statCard {
+    flex: 1;
+    background: #ffffff;
+    border-radius: $card-radius;
+    padding: 24px 32px;
+    // Thay viền cứng bằng bóng đổ mềm
+    border: none;
+    box-shadow: $shadow-soft;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+
+    // Hiệu ứng hover nảy nhẹ
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: $shadow-hover;
+    }
+
+    // Thanh màu trang trí bên trái
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+    }
+
+    // Card Outstanding có vạch cam
+    &:first-child::before {
+      background: $warning-orange;
+    }
+
+    // Card Balance có vạch xanh
+    &:last-child::before {
+      background: $primary-teal;
+    }
+
+    .iconWrapper {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+
+      // Icon nền gradient nhẹ
+      &.orange {
+        background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+        color: $warning-orange;
+      }
+
+      &.teal {
+        background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+        color: $primary-teal;
+      }
+    }
+
+    .statInfo {
+      display: flex;
+      flex-direction: column;
+
+      .label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+        letter-spacing: 0.5px;
+      }
+
+      .value {
+        font-size: 28px;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: -0.5px;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+// --- 3. SECTION CONTAINER (STYLE CHUNG) ---
+.sectionContainer {
+  background: #ffffff;
+  border-radius: $card-radius;
+  box-shadow: $shadow-soft;
+  padding: 32px;
+  border: 1px solid rgba(0, 0, 0, 0.02); // Viền siêu mờ
+
+  .sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    .titleWrapper {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+
+      .icon {
+        font-size: 20px;
+        padding: 10px;
+        border-radius: 12px;
+        // Nền icon tiêu đề
+        background: #f8fafc;
+      }
+
+      .text {
+        display: flex;
+        flex-direction: column;
+
+        strong {
+          font-size: 19px;
+          color: #1e293b;
+          font-weight: 700;
+        }
+
+        span {
+          font-size: 14px;
+          color: #94a3b8;
+          font-weight: 500;
+        }
+      }
+    }
+
+    .payAllBtn {
+      background: linear-gradient(90deg, #0f766e 0%, #14b8a6 100%);
+      border: none;
+      height: 44px;
+      border-radius: 12px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 118, 110, 0.35);
+      }
+    }
+  }
+
+  // --- RIÊNG KHỐI PENDING FEES (Nổi bật hơn) ---
+  &:nth-of-type(4) {
+    // Khối thứ 4 trong layout (sau header, stats, enrolled)
+    background: linear-gradient(180deg, #fffbf7 0%, #ffffff 100%); // Nền cam siêu nhạt
+    border: 1px solid #ffedd5;
+
+    .sectionHeader .titleWrapper .icon {
+      background: #ffedd5; // Icon nền cam
+    }
+  }
+
+  // --- TABLE STYLE ---
+  .customTable {
+    border: 1px solid $border-color;
+    border-radius: $inner-radius;
+    overflow: hidden;
+
+    :global {
+      .ant-table {
+        border-radius: 0;
+      }
+
+      .ant-table-thead>tr>th {
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        border-bottom: 1px solid $border-color;
+        padding: 16px 24px;
+        white-space: nowrap;
+      }
+
+      .ant-table-tbody>tr>td {
+        padding: 20px 24px;
+        font-size: 14px;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.2s;
+      }
+
+      // Hover hàng bảng
+      .ant-table-tbody>tr:hover>td {
+        background: #f1f5f9 !important;
+        cursor: default;
+      }
+
+      .ant-table-tbody>tr:last-child>td {
+        border-bottom: none;
+      }
+    }
+  }
+
+  .amountText {
+    font-weight: 700;
+    color: #1e293b;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .viewBtn {
+    background-color: #f0fdfa; 
+    color: $primary-teal; 
+    border: 1px solid transparent;
+    font-weight: 600;
+    font-size: 12px;
+    border-radius: 8px;
+    height: 32px;
+    padding: 0 16px;
+    transition: all 0.2s ease;
+
+ 
+    &:hover {
+      background-color: $primary-teal !important; 
+      color: #ffffff !important; 
+      border-color: $primary-teal !important; 
+    }
+  }
+
+  .payNowSmall {
+    background: #0f766e;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 0 18px;
+    height: 32px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(15, 118, 110, 0.2);
+
+    &:hover {
+      background: #115e59;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .sectionContainer {
+    padding: 20px;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    .payAllBtn {
+      width: 100%;
+      margin-top: 8px;
+    }
+  }
+}
