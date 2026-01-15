@@ -1,0 +1,21 @@
+import ScheduledTopups from "./ScheduledTopups";
+import LatestAccountCreation from "./LatestAccountCreation";
+import styles from "./Dashboard.module.scss";
+
+const DashboardPage = () => {
+    return (
+        <div className={styles.adminDashboardLayout}>
+            <div className={styles.dashboardHeader}>
+                <h1 className={styles.title}>Admin Dashboard</h1>
+                <p className={styles.subtitle}>Overview of education account system</p>
+            </div>
+
+            <div className={styles.contentWrapper}>
+                <ScheduledTopups />
+                <LatestAccountCreation />
+            </div>
+        </div>
+    );
+};
+
+export default DashboardPage;
