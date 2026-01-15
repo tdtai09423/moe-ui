@@ -5,6 +5,7 @@ import IntroduceLayout from "../layouts/IntroduceLayout";
 import IntroducePage from "../pages/Introduce/IntroducePage.jsx";
 import AccountManage from "../pages/accounts/AccountManage";
 import StudentDetailPage from "../pages/accounts/components/AccountDetail.jsx";
+import CourseManagement from "../pages/courses/CourseManagement";
 
 //Pages
 
@@ -30,6 +31,19 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      {
+        path: "/courses",
+        children: [
+          {
+            index: true,
+            element: <CourseManagement />,
+          },
+          // {
+          //   path: ":id",
+          //   element: <CourseDetailPage />,
+          // },
+        ],
+      }
     ],
   },
   {
