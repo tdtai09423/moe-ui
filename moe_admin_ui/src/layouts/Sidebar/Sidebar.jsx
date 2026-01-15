@@ -1,7 +1,7 @@
 import React from 'react';
 import { Menu } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
-import { ADMIN_MENU } from '../../utils/menuItems'
+import { ADMIN_MENU, getSelectedKey } from '../../utils/menuItems'
 import styles from './Sidebar.module.scss';
 
 const Sidebar = ({ onClose }) => {
@@ -23,7 +23,7 @@ const Sidebar = ({ onClose }) => {
       <div className={styles.menuWrapper}>
         <Menu 
             mode="inline" 
-            selectedKeys={[location.pathname]} 
+            selectedKeys={[getSelectedKey(location.pathname)]} 
             items={ADMIN_MENU.map(i => ({...i, label: <Link to={i.key} onClick={onClose}>{i.label}</Link>}))}
             className={styles.adminMenu} 
         />

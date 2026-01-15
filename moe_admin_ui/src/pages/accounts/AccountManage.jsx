@@ -9,35 +9,27 @@ import styles from "./AccountManage.module.scss";
 import { listAccColumn } from "../../constants/accountColumn.jsx";
 import { useState } from "react";
 import AccountCreate from "./components/AccountCreate.jsx";
+import { useAccountList } from "../../hooks/accounts/useAccountList.jsx";
+import { useNavigate } from "react-router-dom";
 const { Title, Text } = Typography;
 
 const AccountManage = () => {
   const [openCreate, setOpenCreate] = useState(false);
-  const data = [
-    {
-      key: "1",
-      name: "Chua Jun Hao",
-      nric: "S9217788Q",
-      age: 33,
-      balance: 1200,
-      education: "Tertiary",
-      status: "Singapore Citizen",
-      created: "14/11/22",
-      courses: 0,
-    },
-    {
-      key: "2",
-      name: "Eric Nguyen",
-      nric: "s1234567a",
-      age: 26,
-      balance: 0,
-      education: "Secondary",
-      status: "Non-Resident",
-      created: "12/01/26",
-      courses: 3,
-    },
-    // ... thêm data tương tự hình
-  ];
+
+  const { loading, data, total, filter, updateFilter, changePage } =
+    useAccountList();
+
+  const navigate = useNavigate();
+
+  const handleMultiSelectWithAll = (values, fieldName, updateFilter) => {
+    if (values.includes(null)) {
+      updateFilter({ [fieldName]: [] });
+      return;
+    }
+
+    updateFilter({ [fieldName]: values });
+  };
+
   return (
     <>
       <div className={styles.accountContainer}>
@@ -70,47 +62,116 @@ const AccountManage = () => {
             placeholder="Search by name, NRIC or email..."
             className={styles.searchInput}
             size="large"
+            value={filter.Search}
+            onChange={(e) => updateFilter({ Search: e.target.value })}
           />
 
           <Flex gap="middle" wrap="wrap">
             <div style={{ flex: 1 }}>
               <span className={styles.filterLabel}>Education Level</span>
               <Select
-                defaultValue="All"
+                mode="multiple"
                 className={styles.customSelect}
-                options={[{ value: "All", label: "All Levels" }]}
+                showSearch={false}
+                value={
+                  filter.EducationLevel.length === 0
+                    ? [null]
+                    : filter.EducationLevel
+                }
+                onChange={(values) =>
+                  handleMultiSelectWithAll(
+                    values,
+                    "EducationLevel",
+                    updateFilter
+                  )
+                }
+                options={[
+                  { value: null, label: "All Levels" },
+                  { value: "Primary", label: "Primary" },
+                  { value: "Secondary", label: "Secondary" },
+                  { value: "Post-secondary", label: "Post-secondary" },
+                  { value: "Tertiary", label: "Tertiary" },
+                  { value: "Post-graduate", label: "Post-graduate" },
+                ]}
               />
             </div>
             <div style={{ flex: 1 }}>
               <span className={styles.filterLabel}>Schooling Status</span>
               <Select
-                defaultValue="All"
                 className={styles.customSelect}
-                options={[{ value: "All", label: "All Students" }]}
+                value={filter.SchoolingStatus}
+                onChange={(value) => updateFilter({ SchoolingStatus: value })}
+                options={[
+                  { value: null, label: "All Student" },
+                  { value: "In school", label: "In school" },
+                  { value: "Not in school", label: "Not in school" },
+                ]}
               />
             </div>
             <div style={{ flex: 1 }}>
               <span className={styles.filterLabel}>Residential Status</span>
               <Select
-                defaultValue="All"
+                mode="multiple"
                 className={styles.customSelect}
-                options={[{ value: "All", label: "All Statuses" }]}
+                value={
+                  filter.ResidentialStatus.length === 0
+                    ? [null]
+                    : filter.ResidentialStatus
+                }
+                onChange={(values) =>
+                  handleMultiSelectWithAll(
+                    values,
+                    "ResidentialStatus",
+                    updateFilter
+                  )
+                }
+                options={[
+                  { value: null, label: "All Status" },
+                  { value: "Primary", label: "Primary" },
+                  { value: "Singapore Citizen", label: "Singapore Citizen" },
+                  {
+                    value: "Permanent Resident (PR)",
+                    label: "Permanent Resident (PR)",
+                  },
+                  { value: "Tertiary", label: "Tertiary" },
+                  { value: "Non-citizen", label: "Non-citizen" },
+                ]}
               />
             </div>
             <div style={{ flex: 1.5 }}>
               <span className={styles.filterLabel}>Balance Range ($)</span>
               <Flex gap="small" align="center">
-                <Input placeholder="Min" className={styles.customInput} />
+                <Input
+                  placeholder="Min"
+                  className={styles.customInput}
+                  value={filter.MinBalance}
+                  onChange={(e) => updateFilter({ MinBlance: e.target.value })}
+                />
                 <span>-</span>
-                <Input placeholder="Max" className={styles.customInput} />
+                <Input
+                  placeholder="Max"
+                  className={styles.customInput}
+                  value={filter.MaxBlance}
+                  onChange={(e) => updateFilter({ MaxBlance: e.target.value })}
+                />
               </Flex>
             </div>
             <div style={{ flex: 1.5 }}>
               <span className={styles.filterLabel}>Age Range</span>
               <Flex gap="small" align="center">
-                <Input placeholder="Min" className={styles.customInput} />
+                <Input
+                  placeholder="Min"
+                  className={styles.customInput}
+                  value={filter.MinAge}
+                  onChange={(e) => updateFilter({ MinAge: e.target.value })}
+                />
                 <span>-</span>
-                <Input placeholder="Max" className={styles.customInput} />
+                <Input
+                  placeholder="Max"
+                  className={styles.customInput}
+                  value={filter.maxAge}
+                  onChange={(e) => updateFilter({ maxAge: e.target.value })}
+                />
               </Flex>
             </div>
             <div style={{ alignSelf: "flex-end" }}>
@@ -131,7 +192,25 @@ const AccountManage = () => {
 
         {/* 4. Table */}
         <div className={styles.tableWrapper}>
-          <Table columns={listAccColumn} dataSource={data} pagination={false} />
+          <Table
+            columns={listAccColumn}
+            loading={loading}
+            dataSource={data}
+            pagination={{
+              current: filter.pageNumber,
+              pageSize: filter.pageSize,
+              total,
+              onChange: changePage,
+            }}
+            rowKey="id"
+            onRow={(record) => ({
+              style: { cursor: "pointer" },
+              onClick: () => {
+                
+                navigate(`/accounts/${record.id}`);
+              },
+            })}
+          />
         </div>
       </div>
       <AccountCreate open={openCreate} onClose={() => setOpenCreate(false)} />
