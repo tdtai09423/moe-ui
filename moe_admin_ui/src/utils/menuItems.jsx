@@ -18,3 +18,11 @@ export const USER_MENU = [
   { key: '/user/profile', icon: <UserOutlined />, label: 'My Profile' },
   { key: '/user/support', icon: <QuestionCircleOutlined />, label: 'Help & Support' },
 ];
+
+export const getSelectedKey = (pathname) => {
+  if (pathname.startsWith('/accounts')) return '/accounts';
+  if (pathname.startsWith('/topup')) return '/topup';
+  if (pathname.startsWith('/course')) return '/course';
+  if (pathname.startsWith('/settings')) return '/settings';
+  return '/';
+};
