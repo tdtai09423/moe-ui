@@ -64,6 +64,7 @@ export const accountService = {
         educationLevel: params.educationLevel,
         registeredAddress: params.registeredAddress,
         mailingAddress: params.mailingAddress,
+        residentialStatus: params.residentialStatus,
       };
       const url = `account-holders`;
       const res = await api.post(url, data);

@@ -21,7 +21,7 @@ export const router = createBrowserRouter([
 
       },
       {
-        path: "/accounts",
+        path: "accounts",
         children: [
           {
             index: true,
