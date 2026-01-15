@@ -10,7 +10,7 @@ default:
   tags:
     - moe-kain
 
-# ==================== BUILD FE ADMIN ====================
+# ==================== BUILD STAGES ====================
 build_admin_ui:
   stage: build
   script:
@@ -24,7 +24,6 @@ build_admin_ui:
   only:
     - main
 
-# ==================== BUILD FE USER ====================
 build_student_ui:
   stage: build
   script:
@@ -38,7 +37,7 @@ build_student_ui:
   only:
     - main
 
-# ==================== DEPLOY TO AZURE SWA ====================
+# ==================== DEPLOY STAGES ====================
 
 deploy_fe_admin:
   stage: deploy
@@ -46,16 +45,16 @@ deploy_fe_admin:
   dependencies:
     - build_admin_ui
   script:
-    - "Write-Host 'Refreshing environment variables...'"
-    # Lệnh này giúp cập nhật lại PATH trong phiên làm việc hiện tại của Runner
-    - "$env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')"
+    - "Write-Host 'Adding npm global path to Environment...'"
+    # Lệnh này ép Runner tìm trong folder npm của Windows
+    - "$env:Path += \";$env:AppData\npm;$env:ProgramFiles\nodejs\""
     
-    - "Write-Host 'Checking for swa command...'"
-    # Sử dụng 'Get-Command swa -ErrorAction SilentlyContinue' để tránh crash job nếu không thấy
-    - "if (!(Get-Command swa -ErrorAction SilentlyContinue)) { Write-Error 'SWA CLI not found in PATH. Please restart GitLab Runner service.'; exit 1 }"
+    - "Write-Host 'Checking deployment folder...'"
+    - "if (Test-Path './moe_admin_ui/dist') { Get-ChildItem ./moe_admin_ui/dist } else { Write-Error 'Folder dist not found!'; exit 1 }"
     
-    - "Write-Host 'Deploying FE Admin to Azure Static Web App...'"
-    - "swa deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production"
+    - "Write-Host 'Deploying FE Admin...'"
+    # Nếu lệnh 'swa' vẫn không nhận, npx sẽ là phương án dự phòng tự động chạy được luôn
+    - "npx @azure/static-web-apps-cli deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production"
   when: manual
   only:
     - main
@@ -66,14 +65,14 @@ deploy_fe_user:
   dependencies:
     - build_student_ui
   script:
-    - "Write-Host 'Refreshing environment variables...'"
-    - "$env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')"
+    - "Write-Host 'Adding npm global path to Environment...'"
+    - "$env:Path += \";$env:AppData\npm;$env:ProgramFiles\nodejs\""
     
-    - "Write-Host 'Checking for swa command...'"
-    - "if (!(Get-Command swa -ErrorAction SilentlyContinue)) { Write-Error 'SWA CLI not found in PATH. Please restart GitLab Runner service.'; exit 1 }"
+    - "Write-Host 'Checking deployment folder...'"
+    - "if (Test-Path './moe_student_ui/dist') { Get-ChildItem ./moe_student_ui/dist } else { Write-Error 'Folder dist not found!'; exit 1 }"
     
-    - "Write-Host 'Deploying FE User to Azure Static Web App...'"
-    - "swa deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production"
+    - "Write-Host 'Deploying FE User...'"
+    - "npx @azure/static-web-apps-cli deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production"
   when: manual
   only:
     - main
