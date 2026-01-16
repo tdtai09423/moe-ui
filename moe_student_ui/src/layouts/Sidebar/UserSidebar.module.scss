@@ -24,7 +24,7 @@
       .avatar {
         width: 36px;
         height: 36px;
-        background-color: #0f766e;
+        background: linear-gradient(135deg, #0f766e 0%, #1e40af 100%); // Welcome Banner Gradient
         color: white;
         border-radius: 50%;
         display: flex;
@@ -32,6 +32,7 @@
         justify-content: center;
         font-weight: 600;
         font-size: 16px;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); // Green shadow
       }
 
       .info {
@@ -92,8 +93,9 @@
         }
 
         &.ant-menu-item-selected {
-          background-color: #0f766e !important;
+          background: linear-gradient(135deg, #0f766e 0%, #1e40af 100%) !important; // Welcome Banner Gradient
           color: white !important;
+          box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25); // Green Shadow
 
           &::after {
             content: '';
@@ -115,7 +117,7 @@
           }
 
           &:hover {
-            background-color: #0f766e !important;
+            background: linear-gradient(135deg, #0f766e 0%, #1e40af 100%) !important; // Welcome Banner Gradient
             color: white !important;
           }
         }

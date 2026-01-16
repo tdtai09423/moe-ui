@@ -4,7 +4,7 @@ import AdminLayout from "../layouts/AdminLayout";
 import IntroduceLayout from "../layouts/IntroduceLayout";
 import IntroducePage from "../pages/Introduce/IntroducePage.jsx";
 import { AccountManage, AccountDetail } from "../pages/accounts";
-import CourseManagement from "../pages/courses/CourseManagement";
+import { CourseManage } from "../pages/courses";
 import Dashboard from '../pages/Dashboard/Dashboard';
 
 //Pages
@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <CourseManagement />,
+            element: <CourseManage />,
           },
           // {
           //   path: ":id",
