@@ -1,242 +1,285 @@
-import { useState, useEffect } from 'react'; // Added useEffect
-import { Input, Select, DatePicker, Button, InputNumber } from 'antd';
+import React, { useState, useEffect } from "react";
+import { Input, Select, Button, Checkbox, DatePicker } from "antd";
 import {
-    SearchOutlined,
-    DownloadOutlined,
-    BankOutlined,
-    DesktopOutlined,
-    CreditCardOutlined,
-    SyncOutlined,
-    CheckCircleOutlined,
-    CalendarOutlined,
-    DollarOutlined,
-    CheckOutlined
-} from '@ant-design/icons';
-import styles from './CourseFilter.module.scss';
+  SearchOutlined,
+  BankOutlined,
+  DesktopOutlined,
+  CreditCardOutlined,
+  SyncOutlined,
+  CheckCircleOutlined,
+  CalendarOutlined,
+  DollarOutlined,
+  CloseOutlined,
+} from "@ant-design/icons";
+import { courseService } from "../../../../services/courseService";
+import styles from "./CourseFilter.module.scss";
 
-const { Option } = Select;
+const CourseFilter = ({ filter, updateFilter, total, dataCount }) => {
+  const [providersList, setProvidersList] = useState([]);
 
-import { courseService } from '../../../../services/courseService';
-
-
-const CourseFilter = ({ filters, onFilterChange }) => {
-    const [hoveredFilters, setHoveredFilters] = useState({});
-    const [providersList, setProvidersList] = useState([]); 
-
-    const handleFilterChange = (key, value) => {
-        onFilterChange({ ...filters, [key]: value });
+  useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        const res = await courseService.getProviders();
+        setProvidersList(res || []);
+      } catch (error) {
+        console.error("Failed to load providers", error);
+      }
     };
+    fetchProviders();
+  }, []);
 
-    const handleHover = (key, value) => {
-        setHoveredFilters(prev => ({ ...prev, [key]: value }));
-    };
-
-    useEffect(() => {
-        const fetchProviders = async () => {
-            try {
-                const res = await courseService.getProviders();
-                setProvidersList(res || []);
-            } catch (error) {
-                console.error('Failed to load providers', error);
-                message.error('Failed to load providers filter');
-            }
-        };
-        fetchProviders();
-    }, []);
-
-    const modes = ['Online', 'In-Person', 'Hybrid'];
-    const paymentTypes = ['Recurring', 'One-time'];
-    const billingCycles = ['Monthly', 'Quarterly', 'Yearly'];
-    const statuses = ['Active', 'Inactive'];
-
-    const renderCustomOption = (label, value, filterKey, isSelected) => (
-        <div
-            className={styles.dropdownItem}
-            onMouseEnter={() => handleHover(filterKey, value)}
-            onMouseLeave={() => handleHover(filterKey, null)}
-        >
-            <CheckOutlined
-                className={styles.checkoutIcon}
-                style={{ visibility: isSelected || hoveredFilters[filterKey] === value ? 'visible' : 'hidden' }}
-            />
-            <span>{label}</span>
-        </div>
-    );
-
+  const hasActiveFilters = () => {
     return (
-        <div className={styles.filterContainer}>
-            <div className={styles.searchRow}>
-                <Input
-                    placeholder="Search by course name or provider..."
-                    prefix={<SearchOutlined />}
-                    className={styles.searchInput}
-                    value={filters.search}
-                    onChange={(e) => handleFilterChange('search', e.target.value)}
-                />
-            </div>
-
-            <div className={styles.filterGrid}>
-                {/* Provider */}
-                <div className={styles.filterItem}>
-                    <div className={styles.label}><BankOutlined /> Provider</div>
-                    <Select
-                        placeholder="All Providers"
-                        className={styles.select}
-                        value={filters.provider}
-                        onChange={(val) => handleFilterChange('provider', val)}
-                        allowClear
-                        optionLabelProp="label"
-                    >
-                        <Option value="" label="All Providers">
-                            {renderCustomOption("All Providers", "", "provider", filters.provider === "")}
-                        </Option>
-                        {providersList.map(p => (
-                            <Option key={p.providerId} value={p.providerId} label={p.providerName}>
-                                {renderCustomOption(p.providerName, p.providerId, "provider", filters.provider?.includes(p.providerId))}
-                            </Option>
-                        ))}
-                    </Select>
-                </div>
-
-                {/* Mode */}
-                <div className={styles.filterItem}>
-                    <div className={styles.label}><DesktopOutlined /> Mode of Training</div>
-                    <Select
-                        placeholder="All Modes"
-                        className={styles.select}
-                        value={filters.mode}
-                        onChange={(val) => handleFilterChange('mode', val)}
-                        allowClear
-                        optionLabelProp="label"
-                    >
-                        <Option value="" label="All Modes">
-                            {renderCustomOption("All Modes", "", "mode", filters.mode === "")}
-                        </Option>
-                        {modes.map(m => (
-                            <Option key={m} value={m} label={m}>
-                                {renderCustomOption(m, m, "mode", filters.mode === m)}
-                            </Option>
-                        ))}
-                    </Select>
-                </div>
-
-                {/* Payment Type */}
-                <div className={styles.filterItem}>
-                    <div className={styles.label}><CreditCardOutlined /> Payment Type</div>
-                    <Select
-                        placeholder="All Types"
-                        className={styles.select}
-                        value={filters.paymentType}
-                        onChange={(val) => handleFilterChange('paymentType', val)}
-                        allowClear
-                        optionLabelProp="label"
-                    >
-                        <Option value="" label="All Types">
-                            {renderCustomOption("All Types", "", "paymentType", filters.paymentType === "")}
-                        </Option>
-                        {paymentTypes.map(p => (
-                            <Option key={p} value={p} label={p}>
-                                {renderCustomOption(p, p, "paymentType", filters.paymentType === p)}
-                            </Option>
-                        ))}
-                    </Select>
-                </div>
-
-                {/* Billing Cycle */}
-                <div className={styles.filterItem}>
-                    <div className={styles.label}><SyncOutlined /> Billing Cycle</div>
-                    <Select
-                        placeholder="All Cycles"
-                        className={styles.select}
-                        value={filters.billingCycle}
-                        onChange={(val) => handleFilterChange('billingCycle', val)}
-                        allowClear
-                        optionLabelProp="label"
-                    >
-                        <Option value="" label="All Cycles">
-                            {renderCustomOption("All Cycles", "", "billingCycle", filters.billingCycle === "")}
-                        </Option>
-                        {billingCycles.map(c => (
-                            <Option key={c} value={c} label={c}>
-                                {renderCustomOption(c, c, "billingCycle", filters.billingCycle === c)}
-                            </Option>
-                        ))}
-                    </Select>
-                </div>
-
-                {/* Status */}
-                <div className={styles.filterItem}>
-                    <div className={styles.label}><CheckCircleOutlined /> Status</div>
-                    <Select
-                        placeholder="All Statuses"
-                        className={styles.select}
-                        value={filters.status}
-                        onChange={(val) => handleFilterChange('status', val)}
-                        allowClear
-                        optionLabelProp="label"
-                    >
-                        <Option value="" label="All Statuses">
-                            {renderCustomOption("All Statuses", "", "status", filters.status === "")}
-                        </Option>
-                        {statuses.map(s => (
-                            <Option key={s} value={s} label={s}>
-                                {renderCustomOption(s, s, "status", filters.status === s)}
-                            </Option>
-                        ))}
-                    </Select>
-                </div>
-
-                {/* Date Range - Start */}
-                <div className={styles.filterItem}>
-                    <div className={styles.label}><CalendarOutlined /> Course Start Date</div>
-                    <DatePicker
-                        className={styles.datePicker}
-                        placeholder="Select date"
-                        format="DD/MM/YYYY"
-                        onChange={(date) => handleFilterChange('startDate', date)}
-                    />
-                </div>
-
-                {/* Date Range - End */}
-                <div className={styles.filterItem}>
-                    <div className={styles.label}><CalendarOutlined /> Course End Date</div>
-                    <DatePicker
-                        className={styles.datePicker}
-                        placeholder="Select date"
-                        format="DD/MM/YYYY"
-                        onChange={(date) => handleFilterChange('endDate', date)}
-                    />
-                </div>
-
-                {/* Fee Range */}
-                <div className={styles.filterItem}>
-                    <div className={styles.label}><DollarOutlined /> Fee Range ($)</div>
-                    <div className={styles.feeRange}>
-                        <InputNumber
-                            className={styles.feeInput}
-                            placeholder="Min"
-                            min={0}
-                            onChange={(val) => handleFilterChange('minFee', val)}
-                        />
-                        <span>-</span>
-                        <InputNumber
-                            className={styles.feeInput}
-                            placeholder="Max"
-                            min={0}
-                            onChange={(val) => handleFilterChange('maxFee', val)}
-                        />
-                    </div>
-                </div>
-
-                {/* Export Button */}
-                <div className={styles.exportRow}>
-                    <Button icon={<DownloadOutlined />} className={styles.exportButton}>
-                        Export
-                    </Button>
-                </div>
-            </div>
-        </div>
+      (filter.SearchTerm && filter.SearchTerm.trim() !== "") ||
+      (filter.Provider && filter.Provider.length > 0) ||
+      (filter.ModeOfTraining && filter.ModeOfTraining.length > 0) ||
+      (filter.Status && filter.Status.length > 0) ||
+      (filter.PaymentType && filter.PaymentType.length > 0) ||
+      (filter.BillingCycle && filter.BillingCycle.length > 0) ||
+      filter.StartDate ||
+      filter.EndDate ||
+      filter.TotalFeeMin ||
+      filter.TotalFeeMax
     );
+  };
+
+  const handleClearFilters = () => {
+    updateFilter({
+      SearchTerm: "",
+      Provider: [],
+      ModeOfTraining: [],
+      Status: [],
+      PaymentType: [],
+      BillingCycle: [],
+      StartDate: null,
+      EndDate: null,
+      TotalFeeMin: "",
+      TotalFeeMax: "",
+    });
+  };
+
+  const modes = ["Online", "In-Person", "Hybrid"];
+  const paymentTypes = ["Recurring", "One-time"];
+  const billingCycles = ["Monthly", "Quarterly", "Biannually", "Yearly"];
+  const statuses = ["Active", "Inactive"];
+
+  return (
+    <div className={styles.filterCard}>
+      <div className={styles.searchWrapper}>
+        <Input
+          prefix={<SearchOutlined style={{ color: "#94a3b8", fontSize: "18px", marginRight: "8px" }} />}
+          placeholder="Search by course name, provider and course ID..."
+          className={styles.mainSearch}
+          value={filter.SearchTerm}
+          onChange={(e) => updateFilter({ SearchTerm: e.target.value })}
+        />
+      </div>
+
+      <div className={styles.filtersRow}>
+        <div className={styles.filterItem}>
+          <span className={styles.label}>
+            <BankOutlined /> Provider
+          </span>
+          <Select
+            mode="multiple"
+            showSearch={false}
+            placeholder="All Providers"
+            maxTagCount={0}
+            maxTagPlaceholder={(omitted) =>
+              omitted.length === 1 ? omitted[0].label : `${omitted.length} selected`
+            }
+            popupClassName="my-custom-dropdown"
+            className={styles.filterSelect}
+            value={filter.Provider || []}
+            onChange={(val) => updateFilter({ Provider: val })}
+            options={providersList.map((p) => ({
+              value: p.providerId,
+              label: p.providerName,
+            }))}
+            optionRender={(option) => (
+              <div className={styles.customOption}>
+                <Checkbox checked={filter.Provider?.includes(option.value)} />
+                <span style={{ marginLeft: "8px" }}>{option.label}</span>
+              </div>
+            )}
+          />
+        </div>
+
+        <div className={styles.filterItem}>
+          <span className={styles.label}>
+            <DesktopOutlined /> Mode of Training
+          </span>
+          <Select
+            mode="multiple"
+            showSearch={false}
+            placeholder="All Modes"
+            maxTagCount={0}
+            maxTagPlaceholder={(omitted) =>
+              omitted.length === 1 ? omitted[0].label : `${omitted.length} selected`
+            }
+            popupClassName="my-custom-dropdown"
+            className={styles.filterSelect}
+            value={filter.ModeOfTraining || []}
+            onChange={(val) => updateFilter({ ModeOfTraining: val })}
+            options={modes.map((m) => ({ value: m, label: m }))}
+            optionRender={(option) => (
+              <div className={styles.customOption}>
+                <Checkbox checked={filter.ModeOfTraining?.includes(option.value)} />
+                <span style={{ marginLeft: "8px" }}>{option.label}</span>
+              </div>
+            )}
+          />
+        </div>
+
+        <div className={styles.filterItem}>
+          <span className={styles.label}>
+            <CheckCircleOutlined /> Status
+          </span>
+          <Select
+            mode="multiple"
+            showSearch={false}
+            placeholder="All Statuses"
+            maxTagCount={0}
+            maxTagPlaceholder={(omitted) =>
+              omitted.length === 1 ? omitted[0].label : `${omitted.length} selected`
+            }
+            popupClassName="my-custom-dropdown"
+            className={styles.filterSelect}
+            value={filter.Status || []}
+            onChange={(val) => updateFilter({ Status: val })}
+            options={statuses.map((s) => ({ value: s, label: s }))}
+            optionRender={(option) => (
+              <div className={styles.customOption}>
+                <Checkbox checked={filter.Status?.includes(option.value)} />
+                <span style={{ marginLeft: "8px" }}>{option.label}</span>
+              </div>
+            )}
+          />
+        </div>
+
+        <div className={styles.filterItem}>
+          <span className={styles.label}>
+            <CreditCardOutlined /> Payment Type
+          </span>
+          <Select
+            mode="multiple"
+            showSearch={false}
+            placeholder="All Types"
+            maxTagCount={0}
+            maxTagPlaceholder={(omitted) =>
+              omitted.length === 1 ? omitted[0].label : `${omitted.length} selected`
+            }
+            popupClassName="my-custom-dropdown"
+            className={styles.filterSelect}
+            value={filter.PaymentType || []}
+            onChange={(val) => updateFilter({ PaymentType: val })}
+            options={paymentTypes.map((p) => ({ value: p, label: p }))}
+            optionRender={(option) => (
+              <div className={styles.customOption}>
+                <Checkbox checked={filter.PaymentType?.includes(option.value)} />
+                <span style={{ marginLeft: "8px" }}>{option.label}</span>
+              </div>
+            )}
+          />
+        </div>
+
+        <div className={styles.filterItem}>
+          <span className={styles.label}>
+            <SyncOutlined /> Billing Cycle
+          </span>
+          <Select
+            mode="multiple"
+            showSearch={false}
+            placeholder="All Cycles"
+            maxTagCount={0}
+            maxTagPlaceholder={(omitted) =>
+              omitted.length === 1 ? omitted[0].label : `${omitted.length} selected`
+            }
+            popupClassName="my-custom-dropdown"
+            className={styles.filterSelect}
+            value={filter.BillingCycle || []}
+            onChange={(val) => updateFilter({ BillingCycle: val })}
+            options={billingCycles.map((c) => ({ value: c, label: c }))}
+            optionRender={(option) => (
+              <div className={styles.customOption}>
+                <Checkbox checked={filter.BillingCycle?.includes(option.value)} />
+                <span style={{ marginLeft: "8px" }}>{option.label}</span>
+              </div>
+            )}
+          />
+        </div>
+
+        <div className={styles.filterItem}>
+          <span className={styles.label}>
+            <CalendarOutlined /> Start Date
+          </span>
+          <DatePicker
+            className={styles.datePicker}
+            placeholder="Select date"
+            format="DD/MM/YYYY"
+            value={filter.StartDate}
+            onChange={(date) => updateFilter({ StartDate: date })}
+          />
+        </div>
+
+        <div className={styles.filterItem}>
+          <span className={styles.label}>
+            <CalendarOutlined /> End Date
+          </span>
+          <DatePicker
+            className={styles.datePicker}
+            placeholder="Select date"
+            format="DD/MM/YYYY"
+            value={filter.EndDate}
+            onChange={(date) => updateFilter({ EndDate: date })}
+          />
+        </div>
+
+        <div className={`${styles.filterItem} ${styles.rangeItem}`}>
+          <span className={styles.label}>
+            <DollarOutlined /> Fee Range ($)
+          </span>
+          <div className={styles.rangeGroup}>
+            <Input
+              type="number"
+              min={0}
+              placeholder="Min"
+              className={styles.rangeInput}
+              value={filter.TotalFeeMin}
+              onChange={(e) => updateFilter({ TotalFeeMin: e.target.value })}
+            />
+            <span className={styles.separator}>-</span>
+            <Input
+              type="number"
+              min={0}
+              placeholder="Max"
+              className={styles.rangeInput}
+              value={filter.TotalFeeMax}
+              onChange={(e) => updateFilter({ TotalFeeMax: e.target.value })}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.filterFooter}>
+        <span className={styles.showingText}>
+          Showing {dataCount || 0} of {total} courses
+        </span>
+        {hasActiveFilters() && (
+          <Button
+            type="link"
+            danger
+            icon={<CloseOutlined />}
+            className={styles.clearBtn}
+            onClick={handleClearFilters}
+          >
+            Clear Filters
+          </Button>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default CourseFilter;

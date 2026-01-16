@@ -1,13 +1,13 @@
 import React from "react";
 import { Button, Typography, Tag } from "antd";
-import { ArrowLeftOutlined, EditOutlined, StopOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, EditOutlined, StopOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import StatusTag from "../../../../components/common/StatusTag/StatusTag";
 import styles from "./AccountDetailHeader.module.scss";
 
 const { Title, Text } = Typography;
 
-const AccountDetailHeader = ({ accountInfo, onDeactivate, onEdit }) => {
+const AccountDetailHeader = ({ accountInfo, onDeactivate, onActivate, onEdit, isActivating }) => {
   const navigate = useNavigate();
 
   return (
@@ -33,14 +33,25 @@ const AccountDetailHeader = ({ accountInfo, onDeactivate, onEdit }) => {
       </div>
       <div className={styles.headerActions}>
         <Button icon={<EditOutlined />} onClick={onEdit}>Edit</Button>
-        <Button
-          type="primary"
-          danger
-          icon={<StopOutlined />}
-          onClick={onDeactivate}
-        >
-          Deactivate Account
-        </Button>
+        {accountInfo.isActive ? (
+          <Button
+            type="primary"
+            danger
+            icon={<StopOutlined />}
+            onClick={onDeactivate}
+          >
+            Deactivate Account
+          </Button>
+        ) : (
+          <Button
+            type="primary"
+            icon={<CheckCircleOutlined />}
+            onClick={onActivate}
+            loading={isActivating}
+          >
+            Activate Account
+          </Button>
+        )}
       </div>
     </div>
   );

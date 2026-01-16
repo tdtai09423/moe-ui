@@ -1,6 +1,7 @@
 import React from "react";
 import InfoItem from "../../shared/InfoItem";
 import StatusTag from "../../../../components/common/StatusTag/StatusTag";
+import { formatStatus } from "../../../../utils/formatters";
 import {
   UserOutlined,
   CalendarOutlined,
@@ -35,15 +36,15 @@ const AccountInfo = ({ student }) => {
         />
         <InfoItem
           label="EDUCATION LEVEL"
-          value={student.educationLevel}
+          value={formatStatus(student.educationLevel)}
         />
         <InfoItem
           label="RESIDENTIAL STATUS"
-          value={student.residentialStatus}
+          value={formatStatus(student.residentialStatus)}
         />
         <InfoItem
           label="SCHOOLING STATUS"
-          value={<StatusTag status={student.schoolingStatus?.replace(/([A-Z])/g, ' $1').trim()} />}
+          value={<StatusTag status={formatStatus(student.schoolingStatus)} />}
         />
         <InfoItem
           label="ACCOUNT CREATED"

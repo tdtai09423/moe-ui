@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import StatusTag from '../../../components/common/StatusTag/StatusTag';
 import styles from '../CourseDetails.module.scss';
+import { formatDate, formatBillingCycle } from '../../../utils/formatters';
 
 const CourseInfoGrid = ({ info }) => {
     return (
@@ -18,11 +19,11 @@ const CourseInfoGrid = ({ info }) => {
             <div className={styles.infoGrid}>
 
                 <InfoItem icon={<BookOutlined />} label="Course Name" value={info.name} />
-                <InfoItem icon={<CalendarOutlined />} label="Course Start" value={info.startDate} />
+                <InfoItem icon={<CalendarOutlined />} label="Course Start" value={formatDate(info.startDate)} />
                 <InfoItem icon={<CreditCardOutlined />} label="Payment Type" value={info.paymentType} />
-                <InfoItem icon={<CalendarOutlined />} label="Course End" value={info.endDate} />
+                <InfoItem icon={<CalendarOutlined />} label="Course End" value={formatDate(info.endDate)} />
                 <InfoItem icon={<BankOutlined />} label="Provider" value={info.provider} />
-                <InfoItem icon={<SyncOutlined />} label="Billing Cycle" value={info.billingCycle} />
+                <InfoItem icon={<SyncOutlined />} label="Billing Cycle" value={formatBillingCycle(info.billingCycle)} />
                 <div className={styles.infoItem}>
                     <CheckCircleOutlined className={styles.itemIcon} />
                     <div className={styles.itemContent}>

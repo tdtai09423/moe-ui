@@ -112,13 +112,14 @@ const CourseManage = () => {
   };
 
   const dataSource = courses.map(course => ({
-    key: course.courseId,
-    courseId: course.courseId,
+    key: course.id || course.courseId,
+    courseId: course.id || course.courseId,
+    courseCode: course.courseCode,
     courseName: course.courseName,
     provider: course.providerName,
-    startDate: course.startDate ? dayjs(course.startDate).format('DD/MM/YYYY') : '-',
-    endDate: course.endDate ? dayjs(course.endDate).format('DD/MM/YYYY') : '-',
-    paymentType: course.paymentType || '-',
+    startDate: course.courseStartDate ? dayjs(course.courseStartDate).format('DD/MM/YYYY') : (course.startDate ? dayjs(course.startDate).format('DD/MM/YYYY') : '-'),
+    endDate: course.courseEndDate ? dayjs(course.courseEndDate).format('DD/MM/YYYY') : (course.endDate ? dayjs(course.endDate).format('DD/MM/YYYY') : '-'),
+    paymentType: course.paymentOption || course.paymentType || '-',
     billingCycle: course.billingCycle || '-',
     totalFee: course.totalFee ? `$${parseFloat(course.totalFee).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : '-',
     mode: course.modeOfTraining || '-',

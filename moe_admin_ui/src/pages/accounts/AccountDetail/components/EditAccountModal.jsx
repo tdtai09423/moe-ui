@@ -26,10 +26,13 @@ const EditAccountModal = ({ open, onCancel, onSave, accountInfo, loading }) => {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      // Format date for API
+      // Format date for API and ensure educationLevel is included
       const formattedValues = {
-        ...values,
-        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format("DD/MM/YYYY") : null,
+        email: values.email,
+        phone: values.phone,
+        registeredAddress: values.registeredAddress,
+        mailingAddress: values.mailingAddress,
+        educationLevel: values.educationLevel,
       };
       onSave(formattedValues);
     } catch (error) {

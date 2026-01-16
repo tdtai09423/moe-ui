@@ -10,4 +10,8 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    host: '0.0.0.0', // Expose to LAN
+    port: 5173,
+  },
 })

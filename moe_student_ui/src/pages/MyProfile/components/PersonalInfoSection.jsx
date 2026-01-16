@@ -1,7 +1,8 @@
 import React from 'react';
 import { Card, Row, Col } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import styles from '../UserProfile.module.scss'; 
+import styles from '../UserProfile.module.scss';
+import { formatStatus } from '../../../utils/formatters'; 
 
 const PersonalInfoSection = ({ profileData }) => {
   const formatDate = (dateString) => {
@@ -36,9 +37,9 @@ const PersonalInfoSection = ({ profileData }) => {
           <InfoItem label="NRIC" value={profileData?.nric || '-'} />
           <InfoItem label="Date of Birth" value={formatDateWithAge(profileData?.dateOfBirth)} />
           <InfoItem label="Account Created" value={formatDate(profileData?.accountCreated)} />
-          <InfoItem label="Schooling Status" value={profileData?.schoolingStatus || '-'} />
-          <InfoItem label="Education Level" value={profileData?.educationLevel || '-'} />
-          <InfoItem label="Residential Status" value={profileData?.residentialStatus || '-'} />
+          <InfoItem label="Schooling Status" value={formatStatus(profileData?.schoolingStatus) || '-'} />
+          <InfoItem label="Education Level" value={formatStatus(profileData?.educationLevel) || '-'} />
+          <InfoItem label="Residential Status" value={formatStatus(profileData?.residentialStatus) || '-'} />
 
         </Row>
       </div>

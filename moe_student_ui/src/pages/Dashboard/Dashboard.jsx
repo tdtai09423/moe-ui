@@ -134,7 +134,7 @@ const Dashboard = () => {
           <Col xs={24} sm={24} lg={8}>
             <StatsCard
               title="Account Balance"
-              value={balance}
+              value={`$${Number(balance || 0).toFixed(2)}`}
               subText="Available Credits"
               icon={<WalletFilled />}
               iconColorClass={styles.iconTeal}
@@ -155,7 +155,7 @@ const Dashboard = () => {
           <Col xs={24} sm={24} lg={8}>
             <StatsCard
               title="Outstanding Fees"
-              value={outstandingFees.amount}
+              value={`$${Number(outstandingFees.amount || 0).toFixed(2)}`}
               subText={`${outstandingFees.count} pending charges`}
               icon={<ExclamationCircleFilled />}
               variant="action"

@@ -2,6 +2,7 @@ import React from 'react';
 import { Table, Button } from 'antd';
 import StatusTag from '../../../components/common/StatusTag/StatusTag';
 import styles from '../CourseDetails.module.scss';
+import { formatDate, formatBillingCycle } from '../../../utils/formatters';
 
 const OutstandingFees = ({ data }) => {
   const columns = [
@@ -30,14 +31,14 @@ const OutstandingFees = ({ data }) => {
       dataIndex: 'billingCycle',
       key: 'billingCycle',
       width: 140,
-      render: (text) => <span className={styles.cycleText}>{text}</span>,
+      render: (text) => <span className={styles.cycleText}>{formatBillingCycle(text)}</span>,
     },
     {
       title: 'Billing Date',
       dataIndex: 'billingDate',
       key: 'billingDate',
       width: 140,
-      render: (text) => <span className={styles.dateText}>{text}</span>,
+      render: (text) => <span className={styles.dateText}>{formatDate(text)}</span>,
     },
     {
       title: 'Due Date',
@@ -46,7 +47,7 @@ const OutstandingFees = ({ data }) => {
       width: 160,
       render: (text, record) => (
         <div className={styles.dueDateCell}>
-          <span className={styles.date}>{text}</span>
+          <span className={styles.date}>{formatDate(text)}</span>
           {record.daysLeft && <span className={styles.daysLeft}>{record.daysLeft}</span>}
         </div>
       ),

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, DatePicker, Button, Typography, message, Tooltip, Divider } from 'antd';
+import { Modal, Form, Input, Select, DatePicker, Button, Typography, message } from 'antd';
 import {
     CloseOutlined,
     CheckOutlined,
@@ -9,7 +9,8 @@ import {
     ArrowLeftOutlined,
     CalendarOutlined,
     CheckCircleOutlined,
-    InfoCircleOutlined
+    InfoCircleOutlined,
+    LockOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import styles from './AddCourseModal.module.scss';
@@ -24,8 +25,6 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
 
     // State
     const [isReviewStep, setIsReviewStep] = useState(false);
-    const [feeEntryMode, setFeeEntryMode] = useState('per_cycle'); // 'per_cycle' | 'total'
-    const [isHovering, setIsHovering] = useState(false);
     const [providersList, setProvidersList] = useState([]);
     const [submitting, setSubmitting] = useState(false);
 
@@ -43,8 +42,8 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
     ];
 
     const paymentOptions = [
-        { label: 'Recurring', value: 'Recurring' },
-        { label: 'One Time', value: 'One-time' }
+        { label: 'One Time', value: 'One-time' },
+        { label: 'Recurring', value: 'Recurring' }
     ];
 
     const billingCycleOptions = [
@@ -59,11 +58,11 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
         if (!open) {
             form.resetFields();
             setIsReviewStep(false);
-            setFeeEntryMode('per_cycle');
         } else {
             // Default values
             form.setFieldsValue({
-                status: 'Active'
+                status: 'Active',
+                paymentOption: 'One-time'
             });
             fetchProviders();
         }
@@ -112,7 +111,7 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
 
     const isBillingCycleValid = (cycle) => {
         const months = getCourseDurationMonths();
-        if (months === 0) return true;
+        if (months === 0) return false;
         switch (cycle) {
             case 'Monthly': return months >= 1;
             case 'Quarterly': return months >= 3;
@@ -123,23 +122,16 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
     };
 
     const calculateFeePerCycle = () => {
-        if (feeEntryMode === 'per_cycle' || !activeFee) return activeFee;
+        if (!activeFee || !activeBillingCycle || !activeStartDate || !activeEndDate) return '0.00';
         const cycles = calculateCycles(activeStartDate, activeEndDate, activeBillingCycle);
         return (parseFloat(activeFee) / cycles).toFixed(2);
-    };
-
-    const calculateTotalFee = () => {
-        if (feeEntryMode === 'total' || !activeFee) return activeFee;
-        const cycles = calculateCycles(activeStartDate, activeEndDate, activeBillingCycle);
-        return (parseFloat(activeFee) * cycles).toFixed(2);
     };
 
     const handleProceedToReview = async () => {
         try {
             await form.validateFields();
-
-            const finalFee = feeEntryMode === 'per_cycle' ? inputValue : calculateFeePerCycle();
-            if (!finalFee || parseFloat(finalFee) <= 0) {
+            
+            if (!inputValue || parseFloat(inputValue) <= 0) {
                 messageApi.error('Please enter a valid fee amount');
                 return;
             }
@@ -148,7 +140,13 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                 return;
             }
 
-            setFormData(form.getFieldsValue(true));
+            // Store the calculated values before switching to review step
+            const formValues = form.getFieldsValue(true);
+            setFormData({
+                ...formValues,
+                calculatedFeePerCycle: calculateFeePerCycle(),
+                calculatedTotalFee: inputValue
+            });
             setIsReviewStep(true);
         } catch (error) {
             console.error('Validation failed:', error);
@@ -159,6 +157,8 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
         const values = formData;
 
         const selectedProvider = providersList.find(p => p.providerId === values.provider);
+        const finalTotalFee = parseFloat(values.calculatedTotalFee);
+
         const data = {
             name: values.courseName,
             providerId: values.provider,
@@ -168,8 +168,8 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
             endDate: values.endDate,
             payment: { Type: values.paymentOption },
             billingCycle: values.paymentOption === 'One-time' ? null : values.billingCycle,
-            feePerCycle: feeEntryMode === 'per_cycle' ? null : calculateFeePerCycle(),
-            totalFee: feeEntryMode === 'total' ? null : calculateTotalFee(),
+            feePerCycle: null,
+            totalFee: finalTotalFee,
             status: values.status
         };
         setSubmitting(true);
@@ -182,14 +182,25 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
 
     const renderOption = (option, fieldName) => {
         const isSelected = form.getFieldValue(fieldName) === option.value;
+        const isDisabled = option.disabled;
+        
         return (
             <div
-                style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}
-                onMouseEnter={() => setIsHovering(true)}
-                onMouseLeave={() => setIsHovering(false)}
+                style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    width: '100%',
+                    opacity: isDisabled ? 0.5 : 1,
+                    cursor: isDisabled ? 'not-allowed' : 'pointer'
+                }}
             >
-                <CheckOutlined className={styles.checkoutIcon} style={{ visibility: isSelected ? 'visible' : 'hidden', color: 'teal' }} />
-                <span>{option.label}</span>
+                {isDisabled ? (
+                    <LockOutlined style={{ color: '#94a3b8', fontSize: '14px' }} />
+                ) : (
+                    <CheckOutlined className={styles.checkoutIcon} style={{ visibility: isSelected ? 'visible' : 'hidden', color: 'teal' }} />
+                )}
+                <span style={{ color: isDisabled ? '#94a3b8' : 'inherit' }}>{option.label}</span>
             </div>
         );
     };
@@ -202,7 +213,7 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                 onCancel={onClose}
                 footer={null}
                 closeIcon={<CloseOutlined />}
-                width={500}
+                width={600}
                 className={styles.addCourseModal}
                 wrapClassName={styles.addCourseModal}
                 styles={{ mask: { backgroundColor: 'rgba(0, 0, 0, 0.8)', backdropFilter: 'blur(0px)' } }}
@@ -267,9 +278,21 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                                 <div style={{ marginBottom: '1rem' }}>
                                     <Text strong className={styles.sectionTitle}>Fee Configuration</Text>
                                     {(!courseStartDate || !courseEndDate) && (
-                                        <Text type="secondary" style={{ fontSize: '0.85rem', display: 'block', marginTop: '0.25rem', color: '#64748b' }}>
-                                            Please fill in course start and end dates first
-                                        </Text>
+                                        <div style={{ 
+                                            fontSize: '0.85rem', 
+                                            display: 'flex', 
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            marginTop: '0.5rem', 
+                                            padding: '0.5rem 0.75rem',
+                                            backgroundColor: '#fef3c7',
+                                            border: '1px solid #fbbf24',
+                                            borderRadius: '6px',
+                                            color: '#92400e'
+                                        }}>
+                                            <InfoCircleOutlined style={{ fontSize: '14px' }} />
+                                            <span>Please select course start and end dates first to configure fees</span>
+                                        </div>
                                     )}
                                 </div>
 
@@ -284,44 +307,41 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                                 </Form.Item>
 
                                 {paymentOption === 'Recurring' && (
-                                    <Form.Item label="Billing Cycle" name="billingCycle" rules={[{ required: true }]} required>
-                                        <Select
-                                            placeholder="Select billing cycle"
-                                            popupClassName={styles.selectDropdown}
-                                            optionRender={(opt) => renderOption(opt, 'billingCycle')}
-                                            options={billingCycleOptions.map(opt => ({
-                                                ...opt,
-                                                disabled: !isBillingCycleValid(opt.value)
-                                            }))}
-                                        />
-                                    </Form.Item>
+                                    <>
+                                        <Form.Item label="Billing Cycle" name="billingCycle" rules={[{ required: true }]} required>
+                                            <Select
+                                                placeholder="Select billing cycle"
+                                                popupClassName={styles.selectDropdown}
+                                                optionRender={(opt) => renderOption(opt, 'billingCycle')}
+                                                options={billingCycleOptions.map(opt => ({
+                                                    ...opt,
+                                                    disabled: !isBillingCycleValid(opt.value)
+                                                }))}
+                                            />
+                                        </Form.Item>
+                                        {courseStartDate && courseEndDate && getCourseDurationMonths() < 3 && (
+                                            <div style={{ 
+                                                fontSize: '0.8rem', 
+                                                color: '#64748b',
+                                                marginTop: '-0.5rem',
+                                                marginBottom: '1rem',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px'
+                                            }}>
+                                                <InfoCircleOutlined style={{ fontSize: '12px' }} />
+                                                <span>Some billing cycles are disabled due to short course duration ({getCourseDurationMonths()} month{getCourseDurationMonths() !== 1 ? 's' : ''})</span>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
 
                                 {paymentOption === 'Recurring' && billingCycle && (
                                     <div className={styles.feeToggleContainer}>
-                                        <div className={styles.toggleButtons}>
-                                            <Button
-                                                type={feeEntryMode === 'per_cycle' ? 'primary' : 'default'}
-                                                onClick={() => setFeeEntryMode('per_cycle')}
-                                                icon={<DollarOutlined />}
-                                                className={styles.toggleBtn}
-                                            >
-                                                Fee per Cycle
-                                            </Button>
-                                            <Button
-                                                type={feeEntryMode === 'total' ? 'primary' : 'default'}
-                                                onClick={() => setFeeEntryMode('total')}
-                                                icon={<CreditCardOutlined />}
-                                                className={styles.toggleBtn}
-                                            >
-                                                Total Fee
-                                            </Button>
-                                        </div>
-
                                         <Form.Item
+                                            label="Total Course Fee"
                                             name="fee"
-                                            rules={[{ required: true, message: 'Please enter fee' }]}
-                                            style={{ marginBottom: 0 }}
+                                            rules={[{ required: true, message: 'Please enter total fee' }]}
                                         >
                                             <Input
                                                 type="number"
@@ -335,10 +355,7 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                                             <div className={styles.feeSummary}>
                                                 <CheckCircleOutlined style={{ color: '#00b96b' }} />
                                                 <span style={{ marginLeft: 8 }}>
-                                                    {feeEntryMode === 'per_cycle'
-                                                        ? <>Total: <b>${calculateTotalFee()}</b> ({calculateCycles(courseStartDate, courseEndDate, billingCycle)} cycles)</>
-                                                        : <>Per Cycle: <b>${calculateFeePerCycle()}</b> ({calculateCycles(courseStartDate, courseEndDate, billingCycle)} cycles)</>
-                                                    }
+                                                    Fee per Cycle: <b>${calculateFeePerCycle()}</b> ({calculateCycles(courseStartDate, courseEndDate, billingCycle)} cycles)
                                                 </span>
                                             </div>
                                         )}
@@ -438,13 +455,13 @@ const AddCourseModal = ({ open, onClose, onAdd }) => {
                                                 </div>
                                                 <div className={styles.infoRow}>
                                                     <span className={styles.label}>Fee per Cycle:</span>
-                                                    <span className={styles.value} style={{ fontWeight: 'bold', color: '#162f69' }}>${calculateFeePerCycle()}</span>
+                                                    <span className={styles.value} style={{ fontWeight: 'bold', color: '#162f69' }}>${formData.calculatedFeePerCycle}</span>
                                                 </div>
                                             </>
                                         )}
                                         <div className={styles.infoRow}>
                                             <span className={styles.label}>Total Course Fee:</span>
-                                            <span className={styles.value}>${feeEntryMode === 'total' || activePaymentOption === 'One-time' ? parseFloat(activeFee || 0).toFixed(2) : calculateTotalFee()}</span>
+                                            <span className={styles.value}>${parseFloat(formData.calculatedTotalFee || 0).toFixed(2)}</span>
                                         </div>
                                     </div>
                                 </div>

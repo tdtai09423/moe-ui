@@ -1,6 +1,9 @@
 import React from "react";
 import { Table } from "antd";
+import { useNavigate } from "react-router-dom";
 import styles from "./CourseTable.module.scss";
+
+console.log('CourseTable module loaded');
 
 const CourseTable = ({ 
   loading, 
@@ -8,6 +11,14 @@ const CourseTable = ({
   pagination, 
   onTableChange 
 }) => {
+  console.log('CourseTable component rendering', { loading, dataSourceLength: dataSource?.length });
+  const navigate = useNavigate();
+  
+  // Debug: Check if dataSource has data
+  React.useEffect(() => {
+    console.log('CourseTable dataSource:', dataSource);
+  }, [dataSource]);
+  
   const columns = [
     {
       title: 'ID',
@@ -105,6 +116,7 @@ const CourseTable = ({
         loading={loading}
         dataSource={dataSource}
         columns={columns}
+        rowKey="courseId"
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
@@ -119,7 +131,10 @@ const CourseTable = ({
         }}
         onChange={onTableChange}
         className={styles.courseTable}
-        scroll={{ x: 1300 }} 
+        scroll={{ x: 1300 }}
+        onRow={(record) => ({
+          onClick: () => navigate(`/courses/${record.courseId}`),
+        })}
       />
     </div>
   );

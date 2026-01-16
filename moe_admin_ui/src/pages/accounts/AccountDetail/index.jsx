@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Spin, Alert } from "antd";
+import { Spin, Alert, message } from "antd";
 import { useParams } from "react-router-dom";
 import {
   BookOutlined,
@@ -8,6 +8,7 @@ import {
   WalletOutlined
 } from "@ant-design/icons";
 import { useAccounts } from "../../../hooks/accounts/useAccount";
+import { accountService } from "../../../services/accountService";
 import AccountDetailHeader from "./components/AccountDetailHeader";
 import AccountStats from "./components/AccountStats";
 import AccountInfo from "./components/AccountInfo";
@@ -24,6 +25,7 @@ const AccountDetail = () => {
   const [isDeactivating, setIsDeactivating] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
 
   useEffect(() => {
     if (id) getAccountByID(id);
@@ -33,16 +35,34 @@ const AccountDetail = () => {
     setIsDeactivateModalOpen(true);
   };
 
+  const handleActivateClick = async () => {
+    setIsActivating(true);
+    try {
+      // Note: Backend expects education account ID, but we only have account holder ID
+      // The backend should be updated to accept account holder ID or we need a way to get education account ID
+      await accountService.activateAccount(id);
+      message.success('Account activated successfully');
+      await getAccountByID(id);
+    } catch (error) {
+      console.error('Failed to activate account:', error);
+      message.error(error.message || 'Failed to activate account');
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
   const handleDeactivateConfirm = async () => {
     setIsDeactivating(true);
     try {
-      // TODO: Call API to deactivate account
-      // await accountService.deactivateAccount(id);
-      console.log('Deactivating account:', id);
+      // Note: Backend expects education account ID, but we only have account holder ID  
+      // The backend should be updated to accept account holder ID or we need a way to get education account ID
+      await accountService.deactivateAccount(id);
+      message.success('Account deactivated successfully');
       await getAccountByID(id);
       setIsDeactivateModalOpen(false);
     } catch (error) {
       console.error('Failed to deactivate account:', error);
+      message.error(error.message || 'Failed to deactivate account');
     } finally {
       setIsDeactivating(false);
     }
@@ -63,15 +83,13 @@ const AccountDetail = () => {
   const handleEditSave = async (values) => {
     setIsSaving(true);
     try {
-      // TODO: Call API to update account
-      // await accountService.updateAccount(id, values);
-      console.log('Updating account with values:', values);
+      await accountService.updateAccount(id, values);
+      message.success('Account updated successfully');
       await getAccountByID(id);
       setIsEditModalOpen(false);
-      // Show success message
     } catch (error) {
       console.error('Failed to update account:', error);
-      // Show error message
+      message.error(error.message || 'Failed to update account');
     } finally {
       setIsSaving(false);
     }
@@ -127,7 +145,9 @@ const AccountDetail = () => {
       <AccountDetailHeader
         accountInfo={accountInfo}
         onDeactivate={handleDeactivateClick}
+        onActivate={handleActivateClick}
         onEdit={handleEditClick}
+        isActivating={isActivating}
       />
 
       <AccountStats

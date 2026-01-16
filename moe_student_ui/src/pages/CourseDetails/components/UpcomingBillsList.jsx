@@ -2,6 +2,7 @@ import React from 'react';
 import { CalendarOutlined } from '@ant-design/icons';
 import StatusTag from '../../../components/common/StatusTag/StatusTag';
 import styles from '../CourseDetails.module.scss';
+import { formatDate } from '../../../utils/formatters';
 
 const UpcomingBillsList = ({ bills }) => {
   return (
@@ -16,7 +17,7 @@ const UpcomingBillsList = ({ bills }) => {
               </div>
               <div className={styles.dateInfo}>
                 <span className={styles.month}>{bill.month}</span>
-                <span className={styles.due}>Due: {bill.due}</span>
+                <span className={styles.due}>Due: {formatDate(bill.due)}</span>
               </div>
             </div>
             <div className={styles.rightSide}>

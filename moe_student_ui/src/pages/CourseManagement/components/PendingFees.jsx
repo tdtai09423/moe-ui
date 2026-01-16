@@ -4,6 +4,7 @@ import { ExclamationCircleOutlined, DollarCircleOutlined } from '@ant-design/ico
 import { pendingFeesData } from '../../../constants/mockData';
 import styles from '../CourseManagement.module.scss';
 import StatusTag from '../../../components/common/StatusTag/StatusTag';
+import { formatDate, formatBillingCycle } from '../../../utils/formatters';
 
 const PendingFees = () => {
 
@@ -22,13 +23,13 @@ const PendingFees = () => {
       )
     },
     { title: 'Amount', dataIndex: 'amount', key: 'amount', width: 120, className: styles.amountText },
-    { title: 'Billing Cycle', dataIndex: 'cycle', key: 'cycle', width: 120 },
-    { title: 'Billing Date', dataIndex: 'billDate', key: 'billDate', width: 120 },
+    { title: 'Billing Cycle', dataIndex: 'cycle', key: 'cycle', width: 120, render: (cycle) => formatBillingCycle(cycle) },
+    { title: 'Billing Date', dataIndex: 'billDate', key: 'billDate', width: 120, render: (date) => formatDate(date) },
     {
       title: 'Due Date', dataIndex: 'dueDate', key: 'dueDate', width: 140,
       render: (text, record) => (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontWeight: 600, color: '#1e293b' }}>{text}</span>
+          <span style={{ fontWeight: 600, color: '#1e293b' }}>{formatDate(text)}</span>
           <span style={{ fontSize: 11, color: '#d46b08' }}>In {record.daysLeft}</span>
         </div>
       )
