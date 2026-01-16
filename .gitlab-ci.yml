@@ -11,18 +11,6 @@ default:
     - moe-kain
 
 # ==================== BUILD STAGES ====================
-build_admin_ui:
-  stage: build
-  script:
-    - "cd moe_admin_ui"
-    - "npm install"
-    - "npm run build"
-  artifacts:
-    paths:
-      - moe_admin_ui/dist/
-    expire_in: 1 hour
-  only:
-    - main
 
 build_student_ui:
   stage: build
@@ -36,8 +24,6 @@ build_student_ui:
     expire_in: 1 hour
   only:
     - main
-
-# ==================== DEPLOY STAGES ====================
 
 build_admin_ui:
   stage: build
@@ -55,13 +41,20 @@ build_admin_ui:
 # ==================== DEPLOY STAGES ====================
 deploy_fe_admin:
   stage: deploy
-  needs: ["build_admin_ui"] 
-  # dependencies: ["build_admin_ui"] # Khi dùng needs thì không nhất thiết cần dependencies
+  needs: ["build_admin_ui"]
   script:
-    - "Write-Host 'Checking artifacts structure...'"
-    - "ls -R" # Lệnh này giúp bạn nhìn thấy toàn bộ cấu trúc file Runner đang có
-    - "$env:SWA_CLI_DEPLOY_BINARY='C:\\swa_tool\\StaticSitesClient.exe'"
-    - "npx @azure/static-web-apps-cli deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production"
+    - Write-Host "1. Setting Binary and Environment..."
+    - "$env:SWA_CLI_DEPLOY_BINARY = 'C:\swa_tool\StaticSitesClient.exe'"
+    
+    - Write-Host "2. Deploying FE Admin (Non-interactive)..."
+    # Thêm các tham số tường minh để bypass bước 'swa init'
+    - >
+      swa deploy ./moe_admin_ui/dist 
+      --app-location ./moe_admin_ui 
+      --output-location ./dist 
+      --deployment-token $env:AZURE_SWA_ADMIN_TOKEN 
+      --env production 
+      --no-unattended
   when: manual
   only:
     - main
