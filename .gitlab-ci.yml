@@ -12,43 +12,33 @@ default:
 
 # ==================== BUILD STAGES ====================
 
-build_student_ui:
-  stage: build
-  script:
-    - "cd moe_student_ui"
-    - "npm install"
-    - "npm run build"
-  artifacts:
-    paths:
-      - moe_student_ui/dist/
-    expire_in: 1 hour
-  only:
-    - main
-
 build_admin_ui:
   stage: build
   script:
-    - "cd moe_admin_ui"
-    - "npm install"
-    - "npm run build"
-    - "ls dist" # Kiểm tra file tại chỗ
+    - cd moe_admin_ui
+    - npm install
+    - npm run build
   artifacts:
     when: always
     paths:
-      - "moe_admin_ui/dist/" # Đảm bảo đường dẫn này khớp từ gốc project
-    expire_in: 1 day # Tăng thời gian lên để tránh hết hạn artifact khi bạn thao tác manual
+      - moe_admin_ui/dist/  # This saves the folder for the next stage
+    expire_in: 1 day
+  only:
+    - main
 
 # ==================== DEPLOY STAGES ====================
+
 deploy_fe_admin:
   stage: deploy
   needs: ["build_admin_ui"]
   script:
-    - Write-Host "1. Logging in to Azure (Service Principal)..."
-    - "az login --service-principal -u $env:AZURE_CLIENT_ID -p $env:AZURE_CLIENT_SECRET --tenant $env:AZURE_TENANT_ID"
+    # Use standard Shell/PowerShell syntax. Ensure variables are set in GitLab CI/CD Settings
+    - echo "Logging in to Azure..."
+    - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
     
-    - Write-Host "2. Deploying to Static Web App using AZ CLI..."
-    # Lệnh này thay thế hoàn toàn lệnh 'swa' và cực kỳ ổn định
-    - "az staticwebapp deploy --name $env:AZURE_APP_NAME --resource-group $env:RESOURCE_GROUP --source ./moe_admin_ui/dist --token $env:AZURE_SWA_ADMIN_TOKEN"
+    - echo "Deploying to Static Web App..."
+    # The source should point to the artifact folder downloaded from the build stage
+    - az staticwebapp deploy --name "$AZURE_APP_NAME" --resource-group "$RESOURCE_GROUP" --source "./moe_admin_ui/dist" --token "$AZURE_SWA_ADMIN_TOKEN"
   when: manual
   only:
     - main
