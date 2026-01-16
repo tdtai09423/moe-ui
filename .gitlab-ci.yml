@@ -43,18 +43,12 @@ deploy_fe_admin:
   stage: deploy
   needs: ["build_admin_ui"]
   script:
-    - Write-Host "1. Setting Binary and Environment..."
-    - "$env:SWA_CLI_DEPLOY_BINARY = 'C:\swa_tool\StaticSitesClient.exe'"
+    - Write-Host "1. Logging in to Azure (Service Principal)..."
+    - "az login --service-principal -u $env:AZURE_CLIENT_ID -p $env:AZURE_CLIENT_SECRET --tenant $env:AZURE_TENANT_ID"
     
-    - Write-Host "2. Deploying FE Admin (Non-interactive)..."
-    # Thêm các tham số tường minh để bypass bước 'swa init'
-    - >
-      swa deploy ./moe_admin_ui/dist 
-      --app-location ./moe_admin_ui 
-      --output-location ./dist 
-      --deployment-token $env:AZURE_SWA_ADMIN_TOKEN 
-      --env production 
-      --no-unattended
+    - Write-Host "2. Deploying to Static Web App using AZ CLI..."
+    # Lệnh này thay thế hoàn toàn lệnh 'swa' và cực kỳ ổn định
+    - "az staticwebapp deploy --name $env:AZURE_APP_NAME --resource-group $env:RESOURCE_GROUP --source ./moe_admin_ui/dist --token $env:AZURE_SWA_ADMIN_TOKEN"
   when: manual
   only:
     - main
