@@ -4,43 +4,50 @@ import {
   Form,
   Input,
   DatePicker,
-  Select,
   Button,
-  Typography,
-  Col,
   Row,
+  Col,
   Space,
   notification,
   message,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
-import styles from "./styles/AccountCreate.module.scss";
+import { PlusOutlined, CheckCircleFilled } from "@ant-design/icons";
+import styles from "./AccountCreate.module.scss";
 import { useAccounts } from "../../../hooks/accounts/useAccount";
 import dayjs from "dayjs";
-
-const { Option } = Select;
 
 const AccountCreate = ({ open, onClose }) => {
   const [form] = Form.useForm();
   const [isVerify, setIsVerify] = useState(false);
+
+  // Giữ nguyên hook gốc của bạn
   const { loading, getAccountNRIC, reset, createAccount } = useAccounts();
 
+  // --- LOGIC GIỮ NGUYÊN (Kèm logic auto-fill mailing address mới) ---
   const handleVerify = async () => {
     try {
       const nric = form.getFieldValue("nric");
-      const data = await getAccountNRIC(nric);
       if (!nric) {
         message.error("Please input nric!");
+        return; // Thêm return để chặn logic nếu không có nric
       }
+
+      const data = await getAccountNRIC(nric);
       console.log(data);
+
+      // Map dữ liệu về form (Giữ logic cũ + thêm auto-fill mailing)
       form.setFieldsValue({
         fullName: data.fullName,
         dob: data.dateOfBirth ? dayjs(data.dateOfBirth, "YYYY-MM-DD") : null,
         email: data.email,
-        phone: data.phoneNumber,
+        phone: data.phoneNumber, // API trả về phoneNumber, Form field tên là phone
         registeredAddress: data.registeredAddress,
-        residentialStatus:data.residentialStatus,
+        residentialStatus: data.residentialStatus,
+
+        // [YÊU CẦU MỚI] Mailing auto-fill giống Registered
+        mailingAddress: data.registeredAddress,
       });
+
       setIsVerify(true);
     } catch (err) {
       notification.error({
@@ -65,17 +72,19 @@ const AccountCreate = ({ open, onClose }) => {
 
   const onFinish = async (values) => {
     try {
+      // Payload giữ nguyên cấu trúc logic backend của bạn
       const payload = {
         nric: values.nric,
         fullName: values.fullName,
         dateOfBirth: values.dob,
         email: values.email,
-        contactNumber: values.phone,
-        educationLevel: values.educationLevel,
+        contactNumber: values.phone, // Map field 'phone' -> 'contactNumber' cho BE
+        // educationLevel: values.educationLevel, // Đã bỏ theo yêu cầu
         registeredAddress: values.registeredAddress,
         mailingAddress: values.mailingAddress,
-        residentialStatus:values.residentialStatus,
+        residentialStatus: values.residentialStatus,
       };
+
       const res = await createAccount(payload);
       notification.success({
         title: "Add new Account Success...",
@@ -85,7 +94,6 @@ const AccountCreate = ({ open, onClose }) => {
       });
 
       handleReset();
-
       onClose?.();
     } catch (err) {
       notification.error({
@@ -96,14 +104,17 @@ const AccountCreate = ({ open, onClose }) => {
       });
     }
   };
+
+  // --- PHẦN GIAO DIỆN (UI) ĐƯỢC LÀM MỚI ---
   return (
     <Modal
       open={open}
       onCancel={closeHandle}
       footer={null}
-      width={640}
+      width={700}
       centered
       className={styles.addStudentModal}
+      destroyOnClose
     >
       <div className={styles.header}>
         <h2>Add New Student</h2>
@@ -119,127 +130,121 @@ const AccountCreate = ({ open, onClose }) => {
         className={styles.form}
         onFinish={onFinish}
       >
-        <Row gutter={15}>
-          {/* Cột cho NRIC và nút Verify */}
+        {/* Hàng 1: NRIC và Full Name */}
+        <Row gutter={20}>
           <Col span={12}>
             <Form.Item
               label="NRIC *"
               name="nric"
               rules={[{ required: true, message: "Please input NRIC!" }]}
-              help={
-                isVerify ? (
-                  <span style={{ color: "#52c41a" }}>✓ NRIC verified</span>
-                ) : null
-              }
             >
               <Space.Compact style={{ width: "100%" }}>
-                <Input placeholder="Enter NRIC" />
+                <Input
+                  placeholder="S1234567A"
+                  disabled={isVerify}
+                  className={styles.nricInput}
+                />
                 {!isVerify ? (
-                  <Button type="primary" onClick={handleVerify}>
+                  <Button type="primary" onClick={handleVerify} className={styles.verifyBtn}>
                     Verify
                   </Button>
                 ) : (
-                  <Button danger onClick={handleReset}>
+                  <Button className={styles.resetBtn} onClick={handleReset}>
                     Reset
                   </Button>
                 )}
               </Space.Compact>
             </Form.Item>
+            {isVerify && <span className={styles.verifiedTag}><CheckCircleFilled /> Verified</span>}
           </Col>
 
-          {/* Cột cho Full Name */}
           <Col span={12}>
             <Form.Item label="Full Name" name="fullName">
               <Input
-                placeholder="Auto-filled from NRIC verification"
-                disabled={!isVerify}
-                readOnly={isVerify}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item label="Date of Birth *" name="dob">
-              <DatePicker
-                className="dobPicker"
-                style={{ width: "100%" }}
-                placeholder="DD/MM/YY"
-                format="DD/MM/YYYY"
-                allowClear={false}
-                inputReadOnly
-                open={false}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item label="Email *" name="email">
-              <Input
-                placeholder="email@example.com"
-                disabled={!isVerify}
-                readOnly={isVerify}
+                placeholder="Auto-filled from NRIC"
+                disabled={true}
+                className={styles.lockedInput}
               />
             </Form.Item>
           </Col>
         </Row>
 
-        <Form.Item label="Phone Number" name="phone">
-          <Input
-            placeholder="+65 9XXX XXXX"
-            disabled={!isVerify}
-            readOnly={isVerify}
-          />
-        </Form.Item>
+        {/* Hàng 2: DOB và Email */}
+        <Row gutter={20}>
+          <Col span={12}>
+            <Form.Item label="Date of Birth" name="dob">
+              <DatePicker
+                style={{ width: "100%" }}
+                placeholder="DD/MM/YYYY"
+                format="DD/MM/YYYY"
+                disabled={true}
+                className={styles.lockedInput}
+                inputReadOnly
+              />
+            </Form.Item>
+          </Col>
 
-        <Form.Item
-          label="Education Level"
-          name="educationLevel"
-          rules={[
-            { required: true, message: "Please select education level!" },
-          ]}
-          lassName={styles.educationSelect}
-        >
-          <Select placeholder="Select level">
-            <Option value="Primary">Primary</Option>
-            <Option value="Secondary">Secondary</Option>
-            <Option value="Post-secondary">Post-secondary</Option>
-            <Option value="Tertiary">Tertiary</Option>
-            <Option value="Post-graduate">Post-graduate</Option>
-          </Select>
-        </Form.Item>
+          <Col span={12}>
+            <Form.Item
+              label="Email *"
+              name="email"
+              rules={[
+                { required: true, message: "Email is required" },
+                { type: 'email', message: "Invalid email" }
+              ]}
+            >
+              <Input
+                placeholder="email@example.com"
+                disabled={!isVerify}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
 
-        <Form.Item label="Residential Status" name="residentialStatus">
-          <Input
-            placeholder="Auto filled registered address"
-            disabled={!isVerify}
-            readOnly={isVerify}
-          />
-        </Form.Item>
+        {/* Hàng 3: Phone và Residential Status */}
+        <Row gutter={20}>
+          <Col span={12}>
+            <Form.Item label="Phone Number" name="phone">
+              <Input
+                placeholder="+65 9XXX XXXX"
+                disabled={!isVerify}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label="Residential Status" name="residentialStatus">
+              <Input
+                placeholder="Auto-filled status"
+                disabled={true}
+                className={styles.lockedInput}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
 
+        {/* Registered Address */}
         <Form.Item label="Registered Address" name="registeredAddress">
           <Input
-            placeholder="Auto filled registered address"
+            placeholder="Auto-filled from NRIC"
             disabled={!isVerify}
-            readOnly={isVerify}
           />
         </Form.Item>
 
+        {/* Mailing Address */}
         <Form.Item
           label="Mailing Address"
           name="mailingAddress"
           rules={[
-            isVerify && {
-              required: true,
-              message: "Please input mailing address!",
-            },
-          ]}
+            isVerify && { required: true, message: "Please input mailing address!" },
+          ].filter(Boolean)}
         >
           <Input
-            placeholder="Auto filled mailing address (if different)"
+            placeholder="Auto-filled same as Registered Address"
             disabled={!isVerify}
           />
         </Form.Item>
 
+        {/* Footer Buttons */}
         <div className={styles.footer}>
           <Button onClick={closeHandle} className={styles.cancelBtn}>
             Cancel
@@ -250,6 +255,7 @@ const AccountCreate = ({ open, onClose }) => {
             icon={<PlusOutlined />}
             className={styles.createBtn}
             loading={loading}
+            disabled={!isVerify}
           >
             Create Account
           </Button>

@@ -1,5 +1,5 @@
 import React from 'react';
-import EduLogo from '../../../assets/icon/EduLogo';
+import EduLogo from '../../assets/icon/EduLogo';
 import styles from './Footer.module.scss';
 
 const Footer = () => {

@@ -3,8 +3,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 import IntroduceLayout from "../layouts/IntroduceLayout";
 import IntroducePage from "../pages/Introduce/IntroducePage.jsx";
-import AccountManage from "../pages/accounts/AccountManage";
-import StudentDetailPage from "../pages/accounts/components/AccountDetail.jsx";
+import { AccountManage, AccountDetail } from "../pages/accounts";
 import CourseManagement from "../pages/courses/CourseManagement";
 import Dashboard from '../pages/Dashboard/Dashboard';
 
@@ -28,7 +27,7 @@ export const router = createBrowserRouter([
           },
           {
             path: ":id",
-            element: <StudentDetailPage />,
+            element: <AccountDetail />,
           },
         ],
       },
