@@ -9,10 +9,12 @@ import styles from "./AccountManage.module.scss";
 const AccountManage = () => {
   const [openCreate, setOpenCreate] = useState(false);
   const [showInactive, setShowInactive] = useState(false);
-  const { loading, data, total, filter, updateFilter, changePage, fetchData } = useAccountList();
+  const { loading, data, total, filter, updateFilter, changePage, updateSort, fetchData } = useAccountList();
 
   const handleToggleInactive = () => {
-    setShowInactive(!showInactive);
+    const newShowInactive = !showInactive;
+    setShowInactive(newShowInactive);
+    updateFilter({ IsActive: !newShowInactive });
   };
 
   const handleAddAccount = () => {
@@ -45,6 +47,7 @@ const AccountManage = () => {
         filter={filter}
         total={total}
         changePage={changePage}
+        updateSort={updateSort}
       />
 
       <AccountCreate open={openCreate} onClose={handleCloseCreate} />

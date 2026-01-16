@@ -37,7 +37,7 @@ const ConfigurableTable = ({ title, columns, dataSource, rowKey = "id", icon }) 
         <h3 className={styles.tableTitle}>
           {icon} {title} <span className={styles.count}>({dataSource?.length || 0})</span>
         </h3>
-        <Popover 
+        {/* <Popover 
           content={columnSettingsContent} 
           trigger="click" 
           placement="bottomRight"
@@ -46,7 +46,7 @@ const ConfigurableTable = ({ title, columns, dataSource, rowKey = "id", icon }) 
           <Button icon={<SettingOutlined />} className={styles.columnBtn}>
             Columns ({visibleColumns.length}/{columns.length})
           </Button>
-        </Popover>
+        </Popover> */}
       </div>
       <div className={styles.tableWrapper}>
         <Table

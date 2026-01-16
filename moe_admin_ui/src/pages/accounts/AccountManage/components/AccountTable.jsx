@@ -2,10 +2,19 @@ import React from "react";
 import { Table } from "antd";
 import { ReadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { formatStatus } from "../../../../utils/formatters";
 import styles from "./AccountTable.module.scss";
 
-const AccountTable = ({ data, loading, filter, total, changePage }) => {
+const AccountTable = ({ data, loading, filter, total, changePage, updateSort }) => {
   const navigate = useNavigate();
+
+  const handleTableChange = (pagination, filters, sorter) => {
+    if (sorter.columnKey) {
+      updateSort(sorter.columnKey, sorter.order);
+    } else {
+      updateSort(null, null);
+    }
+  };
 
   const columns = [
     {
@@ -52,14 +61,14 @@ const AccountTable = ({ data, loading, filter, total, changePage }) => {
       key: 'educationLevel',
       sorter: true,
       width: '15%',
-      render: (text) => <span className={styles.colEducation}>{text}</span>
+      render: (text) => <span className={styles.colEducation}>{formatStatus(text)}</span>
     },
     {
       title: 'Residential Status',
       dataIndex: 'residentialStatus',
       key: 'residentialStatus',
       width: '15%',
-      render: (text) => <span className={styles.colStatus}>{text}</span>
+      render: (text) => <span className={styles.colStatus}>{formatStatus(text)}</span>
     },
     {
       title: 'Created',
@@ -104,6 +113,7 @@ const AccountTable = ({ data, loading, filter, total, changePage }) => {
         onRow={(record) => ({
           onClick: () => navigate(`/accounts/${record.id}`),
         })}
+        onChange={handleTableChange}
         className={styles.customTable}
       />
     </div>

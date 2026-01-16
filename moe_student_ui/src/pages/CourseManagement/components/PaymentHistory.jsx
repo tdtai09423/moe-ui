@@ -3,6 +3,7 @@ import { Table } from 'antd';
 import { HistoryOutlined } from '@ant-design/icons';
 import { paymentHistoryData as data } from '../../../constants/mockData';
 import styles from '../CourseManagement.module.scss';
+import { formatDate, formatBillingCycle, formatPaymentMethod } from '../../../utils/formatters';
 
 const PaymentHistory = () => {
 
@@ -21,9 +22,9 @@ const PaymentHistory = () => {
       )
     },
     { title: 'Amount', dataIndex: 'amount', key: 'amount', width: 120, className: styles.amountText },
-    { title: 'Billing Cycle', dataIndex: 'cycle', key: 'cycle', width: 120 },
-    { title: 'Paid Date', dataIndex: 'paidDate', key: 'paidDate', width: 140 },
-    { title: 'Method', dataIndex: 'method', key: 'method', width: 150 },
+    { title: 'Billing Cycle', dataIndex: 'cycle', key: 'cycle', width: 120, render: (cycle) => formatBillingCycle(cycle) },
+    { title: 'Paid Date', dataIndex: 'paidDate', key: 'paidDate', width: 140, render: (date) => formatDate(date) },
+    { title: 'Method', dataIndex: 'method', key: 'method', width: 150, render: (method) => formatPaymentMethod(method) },
   ];
 
   return (

@@ -15,9 +15,9 @@ const AccountFilters = ({ filter, updateFilter, total, dataCount }) => {
   const hasActiveFilters = () => {
     return (
       (filter.Search && filter.Search.trim() !== '') ||
-      (filter.EducationLevel && filter.EducationLevel.length > 0) ||
+      (filter.EducationLevels && filter.EducationLevels.length > 0) ||
       (filter.SchoolingStatus && filter.SchoolingStatus !== '') ||
-      (filter.ResidentialStatus && filter.ResidentialStatus.length > 0 && !filter.ResidentialStatus.includes('ALL')) ||
+      (filter.ResidentialStatuses && filter.ResidentialStatuses.length > 0 && !filter.ResidentialStatuses.includes('ALL')) ||
       filter.MinBalance || filter.MaxBalance ||
       filter.MinAge || filter.MaxAge
     );
@@ -26,9 +26,9 @@ const AccountFilters = ({ filter, updateFilter, total, dataCount }) => {
   const handleClearFilters = () => {
     updateFilter({
       Search: '',
-      EducationLevel: [],
+      EducationLevels: [],
       SchoolingStatus: '',
-      ResidentialStatus: [],
+      ResidentialStatuses: [],
       MinBalance: '',
       MaxBalance: '',
       MinAge: '',
@@ -59,18 +59,18 @@ const AccountFilters = ({ filter, updateFilter, total, dataCount }) => {
             maxTagPlaceholder={(omitted) => omitted.length === 1 ? omitted[0].label : `${omitted.length} selected`}
             popupClassName="my-custom-dropdown"
             className={styles.filterSelect}
-            value={filter.EducationLevel || []}
-            onChange={(val) => updateFilter({ EducationLevel: val })}
+            value={filter.EducationLevels || []}
+            onChange={(val) => updateFilter({ EducationLevels: val })}
             options={[
               { value: "Primary", label: "Primary" },
               { value: "Secondary", label: "Secondary" },
-              { value: "Post-Secondary", label: "Post-Secondary" },
+              { value: "PostSecondary", label: "Post-Secondary" },
               { value: "Tertiary", label: "Tertiary" },
-              { value: "Postgraduate", label: "Postgraduate" }
+              { value: "PostGraduate", label: "Post-Graduate" }
             ]}
             optionRender={(option) => (
               <div className={styles.customOption}>
-                <Checkbox checked={filter.EducationLevel?.includes(option.value)} />
+                <Checkbox checked={filter.EducationLevels?.includes(option.value)} />
                 <span style={{ marginLeft: '8px' }}>{option.label}</span>
               </div>
             )}
@@ -87,8 +87,8 @@ const AccountFilters = ({ filter, updateFilter, total, dataCount }) => {
             onChange={(val) => updateFilter({ SchoolingStatus: val })}
             options={[
               { value: "", label: "All Students" },
-              { value: "0", label: "In School" },
-              { value: "1", label: "Not In School" }
+              { value: "InSchool", label: "In School" },
+              { value: "NotInSchool", label: "Not In School" }
             ]}
             optionRender={(option) => (
               <div className={styles.customOption} style={{ paddingLeft: '24px' }}>
@@ -108,16 +108,16 @@ const AccountFilters = ({ filter, updateFilter, total, dataCount }) => {
             maxTagPlaceholder={(omitted) => omitted.length === 1 ? omitted[0].label : `${omitted.length} selected`}
             popupClassName="my-custom-dropdown"
             className={styles.filterSelect}
-            value={filter.ResidentialStatus || []}
-            onChange={(val) => updateFilter({ ResidentialStatus: val })}
+            value={filter.ResidentialStatuses || []}
+            onChange={(val) => updateFilter({ ResidentialStatuses: val })}
             options={[
-              { value: "Singapore Citizen", label: "Singapore Citizen" },
-              { value: "Permanent Resident", label: "Permanent Resident" },
-              { value: "Non-Resident", label: "Non-Resident" }
+              { value: "SingaporeCitizen", label: "Singapore Citizen" },
+              { value: "PermanentResident", label: "Permanent Resident" },
+              { value: "NonResident", label: "Non-Resident" }
             ]}
             optionRender={(option) => (
               <div className={styles.customOption}>
-                <Checkbox checked={filter.ResidentialStatus?.includes(option.value)} />
+                <Checkbox checked={filter.ResidentialStatuses?.includes(option.value)} />
                 <span style={{ marginLeft: '8px' }}>{option.label}</span>
               </div>
             )}

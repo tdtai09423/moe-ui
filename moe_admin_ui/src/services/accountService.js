@@ -80,4 +80,69 @@ export const accountService = {
       };
     }
   },
+
+  async updateAccount(accountHolderId, params) {
+    try {
+      const data = {
+        AccountHolderId: accountHolderId,
+        Email: params.email,
+        PhoneNumber: params.phone,
+        RegisteredAddress: params.registeredAddress,
+        MailingAddress: params.mailingAddress,
+        EducationLevel: params.educationLevel,
+      };
+      const url = `account-holders`;
+      const res = await api.put(url, data);
+      return res;
+    } catch (error) {
+      console.log(error);
+      throw {
+        source: "API",
+        message:
+          error.response?.data?.message || "API update account failed",
+        status: error.response?.status,
+        raw: error,
+      };
+    }
+  },
+
+  async deactivateAccount(educationAccountId) {
+    try {
+      const data = {
+        AccountIds: [educationAccountId]
+      };
+      const url = `account-holders/bulk-deactivate`;
+      const res = await api.post(url, data);
+      return res;
+    } catch (error) {
+      console.log(error);
+      throw {
+        source: "API",
+        message:
+          error.response?.data?.message || "API deactivate account failed",
+        status: error.response?.status,
+        raw: error,
+      };
+    }
+  },
+
+  async activateAccount(educationAccountId) {
+    try {
+      const data = {
+        AccountIds: [educationAccountId]
+      };
+      const url = `account-holders/bulk-activate`;
+      const res = await api.post(url, data);
+      return res;
+    } catch (error) {
+      console.log(error);
+      throw {
+        source: "API",
+        message:
+          error.response?.data?.message || "API activate account failed",
+        status: error.response?.status,
+        raw: error,
+      };
+    }
+  },
 };

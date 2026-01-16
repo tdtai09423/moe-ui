@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from '../CourseManagement.module.scss';
 import { coursesData } from '../../../constants/mockData';
 import StatusTag from '../../../components/common/StatusTag/StatusTag';
+import { formatDate, formatBillingCycle } from '../../../utils/formatters';
 
 const EnrolledTable = () => {
   const navigate = useNavigate();
@@ -38,19 +39,22 @@ const EnrolledTable = () => {
       title: 'Billing Cycle',
       dataIndex: 'billingCycle',
       key: 'billingCycle',
-      width: 120
+      width: 120,
+      render: (cycle) => formatBillingCycle(cycle)
     },
     {
       title: 'Enrolled On',
       dataIndex: 'enrolledDate',
       key: 'enrolledDate',
-      width: 120
+      width: 120,
+      render: (date) => formatDate(date)
     },
     {
       title: 'Billing Date',
       dataIndex: 'nextBillDate',
       key: 'nextBillDate',
-      width: 120
+      width: 120,
+      render: (date) => formatDate(date)
     },
     {
       title: 'Payment Status',

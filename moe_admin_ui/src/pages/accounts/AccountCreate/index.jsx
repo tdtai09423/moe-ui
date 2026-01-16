@@ -134,7 +134,7 @@ const AccountCreate = ({ open, onClose }) => {
         <Row gutter={20}>
           <Col span={12}>
             <Form.Item
-              label="NRIC *"
+              label="NRIC"
               name="nric"
               rules={[{ required: true, message: "Please input NRIC!" }]}
             >
@@ -186,7 +186,7 @@ const AccountCreate = ({ open, onClose }) => {
 
           <Col span={12}>
             <Form.Item
-              label="Email *"
+              label="Email"
               name="email"
               rules={[
                 { required: true, message: "Email is required" },
