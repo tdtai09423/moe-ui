@@ -1,86 +1,21 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import dayjs from 'dayjs';
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { Button, Table, Tag, Spin, Alert, message } from 'antd';
-import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Table, message } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import AddCourseModal from './components/AddCourseModal/AddCourseModal';
 import CourseFilter from './components/CourseFilter/CourseFilter';
+import { useCourseList } from '../../hooks/courses/useCourseList';
 import { courseService } from '../../services/courseService';
 import styles from './CourseManagement.module.scss';
 
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
-dayjs.extend(customParseFormat);
-
 const CourseManagement = () => {
+    const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [courses, setCourses] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [pagination, setPagination] = useState({
-        current: 1,
-        pageSize: 10,
-        total: 0
-    });
+    const { loading, data, total, filter, updateFilter, changePage, updateSort, fetchData } = useCourseList();
 
-    const [filters, setFilters] = useState({
-        search: '',
-        provider: [],
-        mode: [],
-        paymentType: [],
-        billingCycle: [],
-        status: [],
-        startDate: null,
-        endDate: null,
-        minFee: null,
-        maxFee: null
-    });
-
-    const fetchCourses = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const params = {
-                PageNumber: pagination.current,
-                PageSize: pagination.pageSize,
-                SearchTerm: filters.search || undefined,
-                Provider: filters.provider?.length ? filters.provider : undefined,
-                ModeOfTraining: filters.mode?.length ? filters.mode : undefined,
-                Status: filters.status?.length ? filters.status : undefined,
-                PaymentType: filters.paymentType?.length ? filters.paymentType : undefined,
-                BillingCycle: filters.billingCycle?.length ? filters.billingCycle : undefined,
-                StartDate: filters.startDate ? dayjs(filters.startDate).format('YYYY-MM-DD') : undefined,
-                EndDate: filters.endDate ? dayjs(filters.endDate).format('YYYY-MM-DD') : undefined,
-                TotalFeeMin: filters.minFee || undefined,
-                TotalFeeMax: filters.maxFee || undefined,
-                SortBy: 0,
-                SortDirection: 1
-            };
-            const res = await courseService.getListCourses(params);
-
-            // Ensure data is always an array
-            const items = Array.isArray(res?.items) ? res.items : (Array.isArray(res) ? res : []);
-            const total = res?.totalCount || 0;
-
-            setCourses(items);
-            setPagination(prev => ({ ...prev, total: total }));
-
-        } catch (err) {
-            console.error(err);
-            setError(err.message || 'Failed to fetch courses');
-        } finally {
-            setLoading(false);
-        }
-    }, [pagination.current, pagination.pageSize, filters]);
-
-    useEffect(() => {
-        fetchCourses();
-    }, [fetchCourses]);
-
-    const dataSource = courses.map((course) => ({
+    const dataSource = data.map((course) => ({
         key: course.courseCode,
         courseId: course.courseCode,
         courseName: course.courseName,
@@ -89,7 +24,7 @@ const CourseManagement = () => {
         startDate: course.startDate ? dayjs(course.startDate).format("DD/MM/YY") : '',
         endDate: course.endDate ? dayjs(course.endDate).format("DD/MM/YY") : '',
         paymentType: course.paymentType || '-',
-        billingCycle: course.billingCycle || '-', // Mapping billingCycle, defaulting if missing
+        billingCycle: course.billingCycle || '-',
         totalFee: course.totalFee ? `$${course.totalFee.toLocaleString()}` : '$0.00',
         enrolled: course.enrolledCount !== undefined ? course.enrolledCount : 0
     }));
@@ -107,13 +42,13 @@ const CourseManagement = () => {
                 billingCycle: values.billingCycle,
                 totalFee: parseFloat(values.totalFee),
                 feePerCycle: parseFloat(values.feePerCycle),
-                status: values.status // Use status from modal
+                status: values.status
             };
 
             await courseService.createCourse(payload);
             messageApi.success('Course added successfully');
             setIsModalOpen(false);
-            fetchCourses();
+            fetchData();
         } catch (err) {
             console.error(err);
             messageApi.error(err.message || 'Failed to create course');
@@ -121,11 +56,13 @@ const CourseManagement = () => {
     };
 
     const handleTableChange = (pagination, filters, sorter) => {
-        setPagination(prev => ({
-            ...prev,
-            current: pagination.current,
-            pageSize: pagination.pageSize
-        }));
+        if (pagination.current !== filter.PageNumber || pagination.pageSize !== filter.PageSize) {
+            changePage(pagination.current, pagination.pageSize);
+        }
+
+        if (sorter.field) {
+            updateSort(sorter.field, sorter.order);
+        }
     };
 
     const handleOpenModal = () => {
@@ -213,7 +150,15 @@ const CourseManagement = () => {
             {contextHolder}
             <div className={styles.pageHeader}>
                 <div className={styles.headerTop}>
-                    <h1 className={styles.pageTitle}> Course Management </h1>
+                    <h1 className={styles.pageTitle}>Course Management</h1>
+                    <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        className={styles.addButton}
+                        onClick={handleOpenModal}
+                    >
+                        Add Course
+                    </Button>
                 </div>
                 <p className={styles.pageDescription}>
                     Manage courses and student enrollments. Click on a course to view details.
@@ -221,39 +166,11 @@ const CourseManagement = () => {
             </div>
 
             <CourseFilter
-                filters={filters}
-                onFilterChange={(newFilters) => {
-                    setFilters(newFilters);
-                    setPagination(prev => ({ ...prev, current: 1 })); // Reset to page 1 on filter
-                }}
+                filter={filter}
+                updateFilter={updateFilter}
+                total={total}
+                dataCount={data?.length || 0}
             />
-
-            <div className={styles.actionButtons} style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                <Button
-                    icon={<UploadOutlined />}
-                    className={styles.importButton}
-                >
-                    Import CSV/Excel
-                </Button>
-                <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    className={styles.addButton}
-                    onClick={handleOpenModal}
-                >
-                    Add Course
-                </Button>
-            </div>
-
-            {error && (
-                <Alert
-                    message="Error Loading Courses"
-                    description={error}
-                    type="error"
-                    showIcon
-                    style={{ marginBottom: '24px' }}
-                />
-            )}
 
             <div className={styles.tableSection}>
                 <Table
@@ -261,13 +178,18 @@ const CourseManagement = () => {
                     dataSource={dataSource}
                     columns={columns}
                     pagination={{
-                        current: pagination.current,
-                        pageSize: pagination.pageSize,
-                        total: pagination.total,
+                        current: filter.PageNumber,
+                        pageSize: filter.PageSize,
+                        total: total,
                         showSizeChanger: true
                     }}
                     onChange={handleTableChange}
                     className={styles.courseTable}
+                    onRow={(record) => ({
+                        onClick: () => navigate(`/courses/${record.courseId}`),
+                        style: { cursor: 'pointer' }
+                    })}
+                    rowKey="courseId"
                 />
             </div>
 

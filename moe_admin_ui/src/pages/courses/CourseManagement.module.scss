@@ -20,6 +20,25 @@
                 color: $color-text-main;
                 margin: 0;
             }
+
+            .addButton {
+                height: 2.5rem;
+                font-size: 0.875rem;
+                line-height: 1.25rem;
+                padding: 0.5rem 1rem;
+                border-radius: $radius-base;
+                font-weight: 500;
+                background-color: $color-teal;
+                display: flex;
+                box-shadow: none;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.2s ease;
+
+                &:hover {
+                    background-color: darken($color-teal, 5%);
+                }
+            }
         }
 
         .pageDescription {
@@ -60,48 +79,31 @@
         }
 
 
-        .actionButtons {
-            display: flex !important;
-            min-width: fit;
-            gap: 0.5rem;
+    }
 
-            .importButton {
-                height: 2.5rem;
-                padding: 0.5rem 1rem;
-                border-radius: $radius-base;
-                font-weight: 500;
-                font-size: 0.875rem;
-                line-height: 1.25rem;
-                border-color: $color-border;
-                color: $color-text-main;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                transition: all 0.2s ease;
+    .actionButtons {
+        display: flex !important;
+        min-width: fit;
+        gap: 0.5rem;
+        margin-bottom: 16px;
 
-                &:hover {
-                    border-color: $color-navy;
-                    color: $color-navy;
-                }
-            }
+        .importButton {
+            height: 2.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: $radius-base;
+            font-weight: 500;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            border-color: $color-border;
+            color: $color-text-main;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
 
-            .addButton {
-                height: 2.5rem;
-                font-size: 0.875rem;
-                line-height: 1.25rem;
-                padding: 0.5rem 1rem;
-                border-radius: $radius-base;
-                font-weight: 500;
-                background-color: $color-teal;
-                display: flex;
-                box-shadow: none;
-                align-items: center;
-                gap: 8px;
-                transition: all 0.2s ease;
-
-                &:hover {
-                    background-color: $color-teal-hover !important;
-                }
+            &:hover {
+                border-color: $color-navy;
+                color: $color-navy;
             }
         }
     }
