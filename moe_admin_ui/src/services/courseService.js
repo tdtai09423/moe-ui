@@ -113,9 +113,9 @@ export const courseService = {
         }
     },
 
-    async bulkEnrollStudents(data) {
+    async bulkEnrollStudents(courseCode, data) {
         try {
-            const url = "courses/bulk-enroll";
+            const url = `courses/${courseCode}/bulk-enroll`;
             const res = await api.post(url, data);
             return res.data;
         } catch (error) {
@@ -129,9 +129,9 @@ export const courseService = {
         }
     },
 
-    async bulkRemoveStudents(data) {
+    async bulkRemoveStudents(courseCode, data) {
         try {
-            const url = "courses/bulk-remove";
+            const url = `courses/${courseCode}/bulk-remove`;
             const res = await api.delete(url, { data });
             return res.data;
         } catch (error) {

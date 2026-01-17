@@ -10,7 +10,14 @@ import {
     UserDeleteOutlined,
     CheckOutlined,
     CloseOutlined,
-    ExclamationCircleOutlined
+    ExclamationCircleOutlined,
+    DollarOutlined,
+    BookOutlined,
+    BankOutlined,
+    CalendarOutlined,
+    CreditCardOutlined,
+    ReloadOutlined,
+    CheckCircleOutlined
 } from '@ant-design/icons';
 import { courseService } from '../../../services/courseService';
 import styles from './index.module.scss';
@@ -40,8 +47,36 @@ const CourseDetail = () => {
         setLoading(true);
         try {
             const response = await courseService.getCourseDetail(courseCode);
-            setCourse(response);
-            setEnrolledStudents(response.enrolledStudents || []);
+            // Map backend response to frontend state
+            const mappedCourse = {
+                courseId: response.courseId,
+                courseCode: response.courseCode,
+                courseName: response.courseName,
+                providerName: response.providerName,
+                mode: response.mode,
+                status: response.status,
+                startDate: response.startDate,
+                endDate: response.endDate,
+                paymentType: response.paymentType,
+                billingCycle: response.billingCycle,
+                totalFee: response.totalFee,
+                fee: response.totalFee // Alias for compatibility
+            };
+            setCourse(mappedCourse);
+            
+            // Map enrolled students
+            const mappedStudents = (response.enrolledStudents || []).map(student => ({
+                educationAccountId: student.accountHolderId || student.AccountHolderId,
+                accountHolderId: student.accountHolderId || student.AccountHolderId,
+                studentName: student.studentName || student.StudentName,
+                userName: student.studentName || student.StudentName,
+                nric: student.nric || student.NRIC || '-',
+                enrolledAt: student.enrolledAt || student.EnrolledAt,
+                totalPaid: student.totalPaid || student.TotalPaid || 0,
+                totalDue: student.totalDue || student.TotalDue || 0
+            }));
+            console.log('mappedStudents', response);
+            setEnrolledStudents(mappedStudents);
         } catch (error) {
             messageApi.error(error.message || 'Failed to load course details');
             console.error('Error fetching course:', error);
@@ -74,6 +109,44 @@ const CourseDetail = () => {
         }
     }, [isAddStudentModalOpen, course]);
 
+    // Calculate fee per cycle based on total fee and duration
+    const calculateFeePerCycle = (course) => {
+        if (!course) return 0;
+        
+        // If no start/end dates, return the fee as is (one-time payment)
+        if (!course.startDate || !course.endDate) {
+            return course.fee || course.totalFee || 0;
+        }
+        
+        const startDate = new Date(course.startDate);
+        const endDate = new Date(course.endDate);
+        const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                          (endDate.getMonth() - startDate.getMonth()) + 1;
+        
+        let cycles = 1;
+        const billingCycle = course.billingCycle?.toLowerCase();
+        
+        switch (billingCycle) {
+            case 'monthly':
+                cycles = monthsDiff;
+                break;
+            case 'quarterly':
+                cycles = Math.ceil(monthsDiff / 3);
+                break;
+            case 'biannually':
+                cycles = Math.ceil(monthsDiff / 6);
+                break;
+            case 'yearly':
+                cycles = Math.ceil(monthsDiff / 12);
+                break;
+            default:
+                cycles = 1;
+        }
+        
+        const totalFee = course.totalFee || course.fee || 0;
+        return cycles > 0 ? totalFee / cycles : totalFee;
+    };
+
     // Calculate stats
     const totalCollected = useMemo(() => {
         return enrolledStudents.reduce((sum, student) => sum + (student.totalPaid || 0), 0);
@@ -98,7 +171,7 @@ const CourseDetail = () => {
         if (!enrolledSearchQuery.trim()) return enrolledStudents;
         const query = enrolledSearchQuery.toLowerCase();
         return enrolledStudents.filter(student =>
-            student.studentName?.toLowerCase().includes(query) ||
+            (student.studentName || student.userName)?.toLowerCase().includes(query) ||
             student.nric?.toLowerCase().includes(query)
         );
     }, [enrolledStudents, enrolledSearchQuery]);
@@ -136,8 +209,7 @@ const CourseDetail = () => {
 
         setSubmitting(true);
         try {
-            await courseService.bulkEnrollStudents({
-                courseId: course.courseId,
+            await courseService.bulkEnrollStudents(courseCode, {
                 accountIds: selectedStudentIds
             });
 
@@ -162,8 +234,7 @@ const CourseDetail = () => {
 
         setSubmitting(true);
         try {
-            await courseService.bulkRemoveStudents({
-                courseId: course.courseId,
+            await courseService.bulkRemoveStudents(courseCode, {
                 educationAccountIds: selectedEnrollmentIds
             });
 
@@ -213,7 +284,7 @@ const CourseDetail = () => {
             key: 'studentName',
             render: (text, record) => (
                 <div>
-                    <div style={{ fontWeight: 500 }}>{text}</div>
+                    <div style={{ fontWeight: 500 }}>{record.studentName || record.userName || text}</div>
                     <div style={{ fontSize: '12px', color: '#64748b' }}>{record.nric || '-'}</div>
                 </div>
             )
@@ -224,21 +295,9 @@ const CourseDetail = () => {
             key: 'enrolledAt',
             render: (date) => date ? new Date(date).toLocaleDateString('en-GB', {
                 day: '2-digit',
-                month: 'short',
+                month: '2-digit',
                 year: 'numeric'
             }) : '-'
-        },
-        {
-            title: 'Total Paid',
-            dataIndex: 'totalPaid',
-            key: 'totalPaid',
-            render: (amount) => `$${(amount || 0).toFixed(2)}`
-        },
-        {
-            title: 'Amount Due',
-            dataIndex: 'totalDue',
-            key: 'totalDue',
-            render: (amount) => `$${(amount || 0).toFixed(2)}`
         }
     ];
 
@@ -324,7 +383,7 @@ const CourseDetail = () => {
                         <span className={styles.courseCode}>{course.courseCode}</span>
                     </div>
                 </div>
-                <div className={styles.headerActions}>
+                {/* <div className={styles.headerActions}>
                     <Popconfirm
                         title="Delete Course"
                         description="Are you sure you want to delete this course? This action cannot be undone."
@@ -337,7 +396,7 @@ const CourseDetail = () => {
                             Delete Course
                         </Button>
                     </Popconfirm>
-                </div>
+                </div> */}
             </div>
 
             {/* Stats Cards */}
@@ -355,12 +414,12 @@ const CourseDetail = () => {
                 </Card>
                 <Card className={styles.statCard}>
                     <div className={styles.statContent}>
-                        <div className={styles.statIcon} style={{ backgroundColor: '#d1fae5' }}>
-                            <CheckOutlined style={{ color: '#059669', fontSize: 24 }} />
+                        <div className={styles.statIcon} style={{ backgroundColor: '#eef7ec' }}>
+                            <DollarOutlined style={{ color: '#66b30e', fontSize: 24 }} />
                         </div>
                         <div className={styles.statDetails}>
-                            <div className={styles.statLabel}>Total Collected</div>
-                            <div className={styles.statValue}>${totalCollected.toFixed(2)}</div>
+                            <div className={styles.statLabel}>Total Fee</div>
+                            <div className={styles.statValue}>${(course?.totalFee || course?.fee || 0).toFixed(2)}</div>
                         </div>
                     </div>
                 </Card>
@@ -368,27 +427,104 @@ const CourseDetail = () => {
 
             {/* Course Details */}
             <Card title="Course Details" className={styles.detailsCard}>
-                <Descriptions bordered column={2}>
-                    <Descriptions.Item label="Course Name">{course.courseName}</Descriptions.Item>
-                    <Descriptions.Item label="Provider">{course.providerName}</Descriptions.Item>
-                    <Descriptions.Item label="Course Start">
-                        {course.startDate ? new Date(course.startDate).toLocaleDateString('en-GB') : '-'}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Course End">
-                        {course.endDate ? new Date(course.endDate).toLocaleDateString('en-GB') : '-'}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Mode">{course.mode || course.modeOfTraining || '-'}</Descriptions.Item>
-                    <Descriptions.Item label="Payment Type">{course.paymentType || 'One Time'}</Descriptions.Item>
-                    <Descriptions.Item label="Billing Cycle">
-                        {course.billingCycle ? billingCycleLabels[course.billingCycle] || course.billingCycle : '-'}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Status">
-                        <Tag color={course.status === 'Active' ? 'green' : 'red'}>
-                            {course.status}
-                        </Tag>
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Total Fee">${course.totalFee?.toFixed(2) || '0.00'}</Descriptions.Item>
-                </Descriptions>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', padding: '4px 0' }}>
+                    {/* Course Name */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                        <BookOutlined style={{ fontSize: '20px', color: '#64748b', marginTop: '2px' }} />
+                        <div>
+                            <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Course Name</div>
+                            <div style={{ fontWeight: 500, color: '#0f172a' }}>{course.courseName}</div>
+                        </div>
+                    </div>
+
+                    {/* Provider */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                        <BankOutlined style={{ fontSize: '20px', color: '#64748b', marginTop: '2px' }} />
+                        <div>
+                            <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Provider</div>
+                            <div style={{ fontWeight: 500, color: '#0f172a' }}>{course.providerName}</div>
+                        </div>
+                    </div>
+
+                    {/* Course Start */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                        <CalendarOutlined style={{ fontSize: '20px', color: '#64748b', marginTop: '2px' }} />
+                        <div>
+                            <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Course Start</div>
+                            <div style={{ fontWeight: 500, color: '#0f172a' }}>
+                                {course.startDate ? new Date(course.startDate).toLocaleDateString('en-GB', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric'
+                                }) : '-'}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Course End */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                        <CalendarOutlined style={{ fontSize: '20px', color: '#64748b', marginTop: '2px' }} />
+                        <div>
+                            <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Course End</div>
+                            <div style={{ fontWeight: 500, color: '#0f172a' }}>
+                                {course.endDate ? new Date(course.endDate).toLocaleDateString('en-GB', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric'
+                                }) : '-'}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Payment Type */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                        <CreditCardOutlined style={{ fontSize: '20px', color: '#64748b', marginTop: '2px' }} />
+                        <div>
+                            <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Payment Type</div>
+                            <div style={{ fontWeight: 500, color: '#0f172a' }}>{course.paymentType || 'One Time'}</div>
+                        </div>
+                    </div>
+
+                    {/* Billing Cycle */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                        <ReloadOutlined style={{ fontSize: '20px', color: '#64748b', marginTop: '2px' }} />
+                        <div>
+                            <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Billing Cycle</div>
+                            <div style={{ fontWeight: 500, color: '#0f172a' }}>
+                                {course.paymentType === 'Recurring' 
+                                    ? (course.billingCycle ? billingCycleLabels[course.billingCycle] || course.billingCycle : '-')
+                                    : '—'
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Status */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                        <CheckCircleOutlined style={{ fontSize: '20px', color: '#64748b', marginTop: '2px' }} />
+                        <div>
+                            <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Status</div>
+                            <div style={{ fontWeight: 500, color: '#0f172a' }}>
+                                <Tag color={course.status === 'Active' ? 'green' : 'red'}>
+                                    {course.status}
+                                </Tag>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Fee per Cycle - Only show for Recurring payments */}
+                    {course.paymentType === 'Recurring' && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                            <DollarOutlined style={{ fontSize: '20px', color: '#64748b', marginTop: '2px' }} />
+                            <div>
+                                <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px' }}>Fee per Cycle</div>
+                                <div style={{ fontWeight: 500, color: '#0f172a' }}>
+                                    ${calculateFeePerCycle(course).toFixed(2)} / {course.billingCycle ? billingCycleLabels[course.billingCycle] || course.billingCycle : 'Cycle'}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </Card>
 
             {/* Enrolled Students */}

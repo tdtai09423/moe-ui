@@ -24,7 +24,7 @@ const CourseDetails = () => {
       billingCycle: "Monthly",
       feePerCycle: "$500 / Monthly",
       totalFee: "$6000",
-      outstanding: "$0"
+      outstanding: "$500"
    };
 
    const paymentHistoryData = [

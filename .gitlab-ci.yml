@@ -1,78 +1,84 @@
 variables:
   NPM_CONFIG_YES: "true"
   CI: "false"
+  GITHUB_REPO: "git@github.com:tdtai09423/moe-ui.git"
 
 stages:
   - build
-  - deploy
+  - sync_to_github
 
 default:
   tags:
     - moe-kain
 
-# ==================== BUILD FE ADMIN ====================
+# ==================== BUILD STAGES ====================
+.build_template: &build_definition
+  stage: build
+  script:
+    - cd $UI_DIR
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - $UI_DIR/dist/
+    expire_in: 1 hour
+  only:
+    - main
+
 build_admin_ui:
-  stage: build
-  script:
-    - Write-Host "Entering directory moe_admin_ui..."
-    - cd moe_admin_ui
-    - npm install
-    - npm run build
-  artifacts:
-    paths:
-      - moe_admin_ui/dist/
-    expire_in: 1 hour
-  only:
-    - main
+  <<: *build_definition
+  variables:
+    UI_DIR: "moe_admin_ui"
 
-# ==================== BUILD FE USER ====================
 build_student_ui:
-  stage: build
-  script:
-    - Write-Host "Entering directory moe_student_ui..."
-    - cd moe_student_ui
-    - npm install
-    - npm run build
-  artifacts:
-    paths:
-      - moe_student_ui/dist/
-    expire_in: 1 hour
-  only:
-    - main
+  <<: *build_definition
+  variables:
+    UI_DIR: "moe_student_ui"
 
-# ==================== DEPLOY TO AZURE SWA ====================
-
-deploy_fe_admin:
-  stage: deploy
+# ==================== PUSH TO GITHUB ====================
+sync_to_github:
+  stage: sync_to_github
   dependencies:
     - build_admin_ui
-  script:
-    - Write-Host "Checking for swa command path..."
-    - Get-Command swa | Select-Object -ExpandProperty Source
-    
-    - Write-Host "Checking deployment folder..."
-    - if (Test-Path "./moe_admin_ui/dist") { Get-ChildItem ./moe_admin_ui/dist } else { Write-Error "Folder dist not found!"; exit 1 }
-    
-    - Write-Host "Deploying FE Admin to Azure Static Web App..."
-    # Sử dụng trực tiếp lệnh swa thay vì npx
-    - swa deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production
-  when: manual
-  only:
-    - main
-
-deploy_fe_user:
-  stage: deploy
-  dependencies:
     - build_student_ui
+  variables:
+    # 1. Ép Git tải mới hoàn toàn và bỏ qua lỗi hoa/thường trên Windows
+    GIT_STRATEGY: clone
+    GIT_DEPTH: "0"
+    GIT_CONFIG_COUNT: "1"
+    GIT_CONFIG_KEY_0: "core.ignorecase"
+    GIT_CONFIG_VALUE_0: "true"
+    GITHUB_REPO_HTTPS: "github.com/tdtai09423/moe-ui.git"
   script:
-    - Write-Host "Checking for swa command path..."
-    - Get-Command swa | Select-Object -ExpandProperty Source
-    
-    - Write-Host "Checking deployment folder..."
-    - if (Test-Path "./moe_student_ui/dist") { Get-ChildItem ./moe_student_ui/dist } else { Write-Error "Folder dist not found!"; exit 1 }
-    
-    - Write-Host "Deploying FE User to Azure Static Web App..."
-    - swa deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production
-  when: manual
+    - |
+      $ErrorActionPreference = "Stop"
+
+      Write-Host "--- 1. Cleaning up Local Environment ---"
+      # Đảm bảo không còn thông tin cũ nào ảnh hưởng
+      git config --global core.ignorecase true
+      git config user.email "gitlab-runner@moe.com"
+      git config user.name "GitLab Runner Sync"
+
+      Write-Host "--- 2. Checking out Main ---"
+      # Khởi tạo lại nhánh main từ commit hiện tại
+      git checkout -B main
+
+      Write-Host "--- 3. Configuring Remote with Token ---"
+      if (git remote | Select-String "github") { git remote remove github }
+      
+      # Sử dụng x-access-token với biến GITHUB_TOKEN đã lưu trong GitLab
+      $remoteUrl = "https://x-access-token:${env:GITHUB_TOKEN}@${env:GITHUB_REPO_HTTPS}"
+      git remote add github $remoteUrl
+
+      Write-Host "--- 4. Pushing to GitHub ---"
+      # Push toàn bộ nội dung sang GitHub (nhánh main)
+      git push github main --force --atomic
+      
+      if ($LASTEXITCODE -ne 0) {
+          Write-Error "Git push failed!"
+          exit 1
+      }
+      
+      Write-Host "Successfully synced to GitHub!"
   only:
     - main
