@@ -42,37 +42,44 @@ sync_to_github:
     - build_admin_ui
     - build_student_ui
   variables:
+    # QUAN TRỌNG: Tải toàn bộ lịch sử để tránh lỗi 'index-pack failed'
+    GIT_DEPTH: "0"
     GIT_STRATEGY: clone
     GITHUB_REPO_HTTPS: "github.com/tdtai09423/moe-ui.git"
   script:
     - |
+      # Ngừng script ngay nếu có lệnh bị lỗi
       $ErrorActionPreference = "Stop"
 
-      Write-Host "--- 1. Resetting Git Config ---"
-      # Vô hiệu hóa credential helper để Git không dùng password cũ lưu trên máy VM
+      Write-Host "--- 1. Configuring Git Identity ---"
       git config --global credential.helper ""
       git config user.email "gitlab-runner@moe.com"
       git config user.name "GitLab Runner Sync"
 
       Write-Host "--- 2. Preparing Repository ---"
-      # Tạo branch main từ commit hiện tại
+      # Đảm bảo repo không phải là shallow (phòng hờ)
+      if (Test-Path ".git\shallow") {
+          Write-Host "Unshallowing repository..."
+          git fetch --unshallow
+      }
+      
       git checkout -B main
 
-      Write-Host "--- 3. Configuring Remote with x-access-token ---"
+      Write-Host "--- 3. Configuring Remote with Token ---"
       if (git remote | Select-String "github") { git remote remove github }
-      
-      # Sử dụng định dạng x-access-token (An toàn và chuẩn nhất cho GitHub)
       $remoteUrl = "https://x-access-token:${env:GITHUB_TOKEN}@${env:GITHUB_REPO_HTTPS}"
       git remote add github $remoteUrl
 
-      Write-Host "--- 4. Pushing to GitHub (Verbose Mode) ---"
-      # Thêm -v để xem chi tiết lỗi nếu thất bại
-      try {
-          git push github main -f -v
-          Write-Host "Successfully pushed to GitHub!"
-      } catch {
-          Write-Error "Git push failed. Chi tiết lỗi ở phía trên."
+      Write-Host "--- 4. Pushing to GitHub ---"
+      # Sử dụng --atomic để đảm bảo push trọn vẹn hoặc không gì cả
+      git push github main -f --atomic
+      
+      # Kiểm tra kết quả thực tế của lệnh git push
+      if ($LASTEXITCODE -ne 0) {
+          Write-Error "Git push failed with Exit Code $LASTEXITCODE"
           exit 1
       }
+      
+      Write-Host "Successfully synced to GitHub!"
   only:
     - main
