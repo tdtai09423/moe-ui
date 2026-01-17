@@ -48,35 +48,31 @@ sync_to_github:
     - |
       $ErrorActionPreference = "Stop"
 
-      Write-Host "--- 1. Configuring Git Identity ---"
+      Write-Host "--- 1. Resetting Git Config ---"
+      # Vô hiệu hóa credential helper để Git không dùng password cũ lưu trên máy VM
+      git config --global credential.helper ""
       git config user.email "gitlab-runner@moe.com"
       git config user.name "GitLab Runner Sync"
 
       Write-Host "--- 2. Preparing Repository ---"
-      # Đảm bảo chúng ta đang ở nhánh main và có dữ liệu
+      # Tạo branch main từ commit hiện tại
       git checkout -B main
-      
-      # Thêm các thay đổi nếu có (ví dụ các folder dist nếu bạn muốn push cả nó)
-      # git add .
-      # git commit -m "Sync from GitLab: $CI_COMMIT_SHA" || Write-Host "No changes to commit"
 
-      Write-Host "--- 3. Configuring Remote with Token ---"
+      Write-Host "--- 3. Configuring Remote with x-access-token ---"
       if (git remote | Select-String "github") { git remote remove github }
       
-      # ĐỊNH DẠNG CHUẨN: https://username:token@github.com/...
-      # Thay 'tdtai09423' bằng đúng username GitHub của bạn
-      $remoteUrl = "https://tdtai09423:${env:GITHUB_TOKEN}@${env:GITHUB_REPO_HTTPS}"
+      # Sử dụng định dạng x-access-token (An toàn và chuẩn nhất cho GitHub)
+      $remoteUrl = "https://x-access-token:${env:GITHUB_TOKEN}@${env:GITHUB_REPO_HTTPS}"
       git remote add github $remoteUrl
 
-      Write-Host "--- 4. Pushing to GitHub ---"
-      # Thêm --set-upstream và force push
-      git push github main --force
-      
-      if ($LASTEXITCODE -ne 0) {
-          Write-Error "Git push failed. Hãy kiểm tra: 1. Token có quyền 'repo' không? 2. Username 'tdtai09423' có đúng không?"
-          exit 1
-      } else {
+      Write-Host "--- 4. Pushing to GitHub (Verbose Mode) ---"
+      # Thêm -v để xem chi tiết lỗi nếu thất bại
+      try {
+          git push github main -f -v
           Write-Host "Successfully pushed to GitHub!"
+      } catch {
+          Write-Error "Git push failed. Chi tiết lỗi ở phía trên."
+          exit 1
       }
   only:
     - main
