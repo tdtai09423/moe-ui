@@ -38,34 +38,41 @@ build_student_ui:
 # ==================== PUSH TO GITHUB ====================
 sync_to_github:
   stage: sync_to_github
+  dependencies:
+    - build_admin_ui
+    - build_student_ui
   variables:
-    # 1. Chỉ tải nhánh đang chạy (main), bỏ qua tất cả các nhánh khác
+    GIT_DEPTH: "0"
     GIT_SINGLE_BRANCH: "true"
-    GIT_DEPTH: "1" 
     GIT_STRATEGY: clone
     GITHUB_REPO_HTTPS: "github.com/tdtai09423/moe-ui.git"
   script:
     - |
       $ErrorActionPreference = "Stop"
 
-      Write-Host "--- 1. Configuring Git ---"
-      git config --global core.ignorecase true
+      Write-Host "--- 1. Configuring Git Identity ---"
+      git config --global credential.helper ""
       git config user.email "gitlab-runner@moe.com"
       git config user.name "GitLab Runner Sync"
 
-      Write-Host "--- 2. Checking out Main ---"
-      # Vì đã dùng GIT_SINGLE_BRANCH, Runner lúc này chỉ thấy duy nhất nhánh main
+      Write-Host "--- 2. Preparing Repository ---"
+      # Đảm bảo chúng ta có một nhánh local 'main' sạch sẽ
       git checkout -B main
 
-      Write-Host "--- 3. Pushing to GitHub ---"
+      Write-Host "--- 3. Configuring Remote with Token ---"
       if (git remote | Select-String "github") { git remote remove github }
       $remoteUrl = "https://x-access-token:${env:GITHUB_TOKEN}@${env:GITHUB_REPO_HTTPS}"
       git remote add github $remoteUrl
 
-      # Push sang GitHub
+      Write-Host "--- 4. Pushing to GitHub (Full Push) ---"
+      # Push toàn bộ lịch sử của nhánh main sang GitHub
       git push github main --force
       
-      if ($LASTEXITCODE -ne 0) { exit 1 }
+      if ($LASTEXITCODE -ne 0) {
+          Write-Error "Git push failed!"
+          exit 1
+      }
+      
       Write-Host "Successfully synced to GitHub!"
   only:
     - main
