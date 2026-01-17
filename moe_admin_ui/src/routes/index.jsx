@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <CourseManage />,
+            element: <CourseManagement />,
           },
           {
             path: ":courseCode",
@@ -46,7 +46,7 @@ export const router = createBrowserRouter([
       }
     ],
   },
- {
+  {
     path: '/introduce',
     children: [
       {
