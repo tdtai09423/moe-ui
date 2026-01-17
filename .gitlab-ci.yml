@@ -64,34 +64,36 @@ deploy_fe_admin:
     - Write-Host "Deploying Admin UI to Azure Static Web App..."
     - Write-Host "=========================================="
     
-    # Check if SWA CLI is installed
+    # Check and install SWA CLI if needed
     - Write-Host "Checking for SWA CLI..."
-    - $swaPath = Get-Command swa -ErrorAction SilentlyContinue
-    - if (-not $swaPath) {
-        Write-Host "SWA CLI not found. Installing globally...";
-        npm install -g @azure/static-web-apps-cli;
-        Write-Host "SWA CLI installed successfully";
-      } else {
-        Write-Host "SWA CLI found at:" $swaPath.Source;
+    - |
+      try {
+        $null = Get-Command swa -ErrorAction Stop
+        Write-Host "SWA CLI is already installed"
+      } catch {
+        Write-Host "SWA CLI not found. Installing globally..."
+        npm install -g @azure/static-web-apps-cli
+        Write-Host "SWA CLI installed successfully"
       }
     
     # Verify deployment token
-    - if ([string]::IsNullOrEmpty($env:AZURE_SWA_ADMIN_TOKEN)) {
-        Write-Error "AZURE_SWA_ADMIN_TOKEN is not set!";
-        exit 1;
+    - |
+      if ([string]::IsNullOrEmpty($env:AZURE_SWA_ADMIN_TOKEN)) {
+        Write-Error "AZURE_SWA_ADMIN_TOKEN is not set!"
+        exit 1
       } else {
-        Write-Host "Deployment token verified (length:" $env:AZURE_SWA_ADMIN_TOKEN.Length ")";
+        Write-Host "Deployment token verified"
       }
     
     # Verify build artifacts
     - Write-Host "Verifying build artifacts..."
-    - if (Test-Path "./moe_admin_ui/dist") { 
-        Write-Host "Build artifacts found"; 
-        Write-Host "Files in dist folder:";
-        Get-ChildItem ./moe_admin_ui/dist -Recurse | Select-Object -First 10;
+    - |
+      if (Test-Path "./moe_admin_ui/dist") { 
+        Write-Host "Build artifacts found"
+        Get-ChildItem ./moe_admin_ui/dist -Recurse | Select-Object -First 5
       } else { 
-        Write-Error "Build folder (./moe_admin_ui/dist) not found!"; 
-        exit 1;
+        Write-Error "Build folder not found!"
+        exit 1
       }
     
     # Deploy to Azure Static Web Apps
@@ -112,34 +114,36 @@ deploy_fe_student:
     - Write-Host "Deploying Student UI to Azure Static Web App..."
     - Write-Host "=========================================="
     
-    # Check if SWA CLI is installed
+    # Check and install SWA CLI if needed
     - Write-Host "Checking for SWA CLI..."
-    - $swaPath = Get-Command swa -ErrorAction SilentlyContinue
-    - if (-not $swaPath) {
-        Write-Host "SWA CLI not found. Installing globally...";
-        npm install -g @azure/static-web-apps-cli;
-        Write-Host "SWA CLI installed successfully";
-      } else {
-        Write-Host "SWA CLI found at:" $swaPath.Source;
+    - |
+      try {
+        $null = Get-Command swa -ErrorAction Stop
+        Write-Host "SWA CLI is already installed"
+      } catch {
+        Write-Host "SWA CLI not found. Installing globally..."
+        npm install -g @azure/static-web-apps-cli
+        Write-Host "SWA CLI installed successfully"
       }
     
     # Verify deployment token
-    - if ([string]::IsNullOrEmpty($env:AZURE_SWA_STUDENT_TOKEN)) {
-        Write-Error "AZURE_SWA_STUDENT_TOKEN is not set!";
-        exit 1;
+    - |
+      if ([string]::IsNullOrEmpty($env:AZURE_SWA_STUDENT_TOKEN)) {
+        Write-Error "AZURE_SWA_STUDENT_TOKEN is not set!"
+        exit 1
       } else {
-        Write-Host "Deployment token verified (length:" $env:AZURE_SWA_STUDENT_TOKEN.Length ")";
+        Write-Host "Deployment token verified"
       }
     
     # Verify build artifacts
     - Write-Host "Verifying build artifacts..."
-    - if (Test-Path "./moe_student_ui/dist") { 
-        Write-Host "Build artifacts found"; 
-        Write-Host "Files in dist folder:";
-        Get-ChildItem ./moe_student_ui/dist -Recurse | Select-Object -First 10;
+    - |
+      if (Test-Path "./moe_student_ui/dist") { 
+        Write-Host "Build artifacts found"
+        Get-ChildItem ./moe_student_ui/dist -Recurse | Select-Object -First 5
       } else { 
-        Write-Error "Build folder (./moe_student_ui/dist) not found!"; 
-        exit 1;
+        Write-Error "Build folder not found!"
+        exit 1
       }
     
     # Deploy to Azure Static Web Apps
