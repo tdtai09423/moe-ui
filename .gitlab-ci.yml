@@ -46,7 +46,6 @@ sync_to_github:
     GITHUB_REPO_HTTPS: "github.com/tdtai09423/moe-ui.git"
   script:
     - |
-      # 1. Cấu hình để PowerShell dừng lại khi có lỗi Git
       $ErrorActionPreference = "Stop"
 
       Write-Host "--- 1. Configuring Git Identity ---"
@@ -54,27 +53,27 @@ sync_to_github:
       git config user.name "GitLab Runner Sync"
 
       Write-Host "--- 2. Preparing Repository ---"
+      # Đảm bảo chúng ta đang ở nhánh main và có dữ liệu
       git checkout -B main
+      
+      # Thêm các thay đổi nếu có (ví dụ các folder dist nếu bạn muốn push cả nó)
+      # git add .
+      # git commit -m "Sync from GitLab: $CI_COMMIT_SHA" || Write-Host "No changes to commit"
 
-      Write-Host "--- 3. Verifying Token ---"
-      if ([string]::IsNullOrEmpty($env:GITHUB_TOKEN)) {
-          Write-Error "GITHUB_TOKEN variable is empty!"
-          exit 1
-      }
-
-      Write-Host "--- 4. Configuring Remote with Token ---"
+      Write-Host "--- 3. Configuring Remote with Token ---"
       if (git remote | Select-String "github") { git remote remove github }
       
-      # Cách định dạng URL chuẩn để tránh lỗi Invalid username
-      $remoteUrl = "https://${env:GITHUB_TOKEN}@${env:GITHUB_REPO_HTTPS}"
+      # ĐỊNH DẠNG CHUẨN: https://username:token@github.com/...
+      # Thay 'tdtai09423' bằng đúng username GitHub của bạn
+      $remoteUrl = "https://tdtai09423:${env:GITHUB_TOKEN}@${env:GITHUB_REPO_HTTPS}"
       git remote add github $remoteUrl
 
-      Write-Host "--- 5. Pushing to GitHub via HTTPS ---"
-      # Chạy lệnh push và kiểm tra mã thoát (exit code)
-      git push github main -f
+      Write-Host "--- 4. Pushing to GitHub ---"
+      # Thêm --set-upstream và force push
+      git push github main --force
       
       if ($LASTEXITCODE -ne 0) {
-          Write-Error "Git push failed with exit code $LASTEXITCODE"
+          Write-Error "Git push failed. Hãy kiểm tra: 1. Token có quyền 'repo' không? 2. Username 'tdtai09423' có đúng không?"
           exit 1
       } else {
           Write-Host "Successfully pushed to GitHub!"
