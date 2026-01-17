@@ -86,41 +86,9 @@ deploy_fe_admin:
         exit 1
       }
     
-    # Deploy using direct API upload
-    - Write-Host "Starting deployment via Azure API..."
-    - |
-      $distPath = "./moe_admin_ui/dist"
-      $token = $env:AZURE_SWA_ADMIN_TOKEN
-      
-      # Create deployment zip
-      Write-Host "Creating deployment package..."
-      $zipPath = "deploy_admin.zip"
-      Compress-Archive -Path "$distPath/*" -DestinationPath $zipPath -Force
-      Write-Host "Deployment package created: $((Get-Item $zipPath).Length / 1MB) MB"
-      
-      # Upload to Azure Static Web Apps
-      Write-Host "Uploading to Azure Static Web Apps..."
-      $deployUrl = "https://api.azurestaticapps.net/api/v1/deploy"
-      
-      $headers = @{
-        "Authorization" = "Bearer $token"
-        "Content-Type" = "application/zip"
-      }
-      
-      try {
-        $response = Invoke-RestMethod -Uri $deployUrl -Method Post -Headers $headers -InFile $zipPath -TimeoutSec 300
-        Write-Host "Deployment successful!"
-        Write-Host "Response: $($response | ConvertTo-Json -Depth 2)"
-      } catch {
-        Write-Error "Deployment failed: $_"
-        if ($_.Exception.Response) {
-          $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
-          $responseBody = $reader.ReadToEnd()
-          Write-Error "Response: $responseBody"
-        }
-        exit 1
-      }
-    
+    # Deploy to Azure Static Web Apps
+    - Write-Host "Starting deployment..."
+    - npx -y @azure/static-web-apps-cli deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production --verbose
     - Write-Host "Deployment completed successfully!"
   when: manual
   only:
@@ -158,41 +126,9 @@ deploy_fe_student:
         exit 1
       }
     
-    # Deploy using direct API upload
-    - Write-Host "Starting deployment via Azure API..."
-    - |
-      $distPath = "./moe_student_ui/dist"
-      $token = $env:AZURE_SWA_STUDENT_TOKEN
-      
-      # Create deployment zip
-      Write-Host "Creating deployment package..."
-      $zipPath = "deploy_student.zip"
-      Compress-Archive -Path "$distPath/*" -DestinationPath $zipPath -Force
-      Write-Host "Deployment package created: $((Get-Item $zipPath).Length / 1MB) MB"
-      
-      # Upload to Azure Static Web Apps
-      Write-Host "Uploading to Azure Static Web Apps..."
-      $deployUrl = "https://api.azurestaticapps.net/api/v1/deploy"
-      
-      $headers = @{
-        "Authorization" = "Bearer $token"
-        "Content-Type" = "application/zip"
-      }
-      
-      try {
-        $response = Invoke-RestMethod -Uri $deployUrl -Method Post -Headers $headers -InFile $zipPath -TimeoutSec 300
-        Write-Host "Deployment successful!"
-        Write-Host "Response: $($response | ConvertTo-Json -Depth 2)"
-      } catch {
-        Write-Error "Deployment failed: $_"
-        if ($_.Exception.Response) {
-          $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
-          $responseBody = $reader.ReadToEnd()
-          Write-Error "Response: $responseBody"
-        }
-        exit 1
-      }
-    
+    # Deploy to Azure Static Web Apps
+    - Write-Host "Starting deployment..."
+    - npx -y @azure/static-web-apps-cli deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production --verbose
     - Write-Host "Deployment completed successfully!"
   when: manual
   only:
