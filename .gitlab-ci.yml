@@ -1,135 +1,69 @@
 variables:
   NPM_CONFIG_YES: "true"
   CI: "false"
+  GITHUB_REPO: "git@github.com:tdtai09423/moe-ui.git"
 
 stages:
   - build
-  - deploy
+  - sync_to_github
 
 default:
   tags:
     - moe-kain
 
-# ==================== BUILD FE ADMIN ====================
+# ==================== BUILD STAGES ====================
+.build_template: &build_definition
+  stage: build
+  script:
+    - cd $UI_DIR
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - $UI_DIR/dist/
+    expire_in: 1 hour
+  only:
+    - main
+
 build_admin_ui:
-  stage: build
-  script:
-    - Write-Host "=========================================="
-    - Write-Host "Building Admin UI..."
-    - Write-Host "=========================================="
-    - cd moe_admin_ui
-    - Write-Host "Installing dependencies..."
-    - npm install
-    - Write-Host "Building project..."
-    - npm run build
-    - Write-Host "Build completed successfully!"
-    - Write-Host "Checking build output..."
-    - if (Test-Path "./dist") { Write-Host "dist folder exists"; Get-ChildItem ./dist -Recurse | Select-Object -First 5 } else { Write-Error "dist folder not found!"; exit 1 }
-  artifacts:
-    paths:
-      - moe_admin_ui/dist/
-    expire_in: 1 hour
-  only:
-    - main
+  <<: *build_definition
+  variables:
+    UI_DIR: "moe_admin_ui"
 
-# ==================== BUILD FE STUDENT ====================
 build_student_ui:
-  stage: build
-  script:
-    - Write-Host "=========================================="
-    - Write-Host "Building Student UI..."
-    - Write-Host "=========================================="
-    - cd moe_student_ui
-    - Write-Host "Installing dependencies..."
-    - npm install
-    - Write-Host "Building project..."
-    - npm run build
-    - Write-Host "Build completed successfully!"
-    - Write-Host "Checking build output..."
-    - if (Test-Path "./dist") { Write-Host "dist folder exists"; Get-ChildItem ./dist -Recurse | Select-Object -First 5 } else { Write-Error "dist folder not found!"; exit 1 }
-  artifacts:
-    paths:
-      - moe_student_ui/dist/
-    expire_in: 1 hour
-  only:
-    - main
+  <<: *build_definition
+  variables:
+    UI_DIR: "moe_student_ui"
 
-# ==================== DEPLOY FE ADMIN TO AZURE SWA ====================
-deploy_fe_admin:
-  stage: deploy
-  dependencies:
-    - build_admin_ui
+# ==================== PUSH TO GITHUB ====================
+sync_to_github:
+  stage: sync_to_github
+  variables:
+    # Không cần khai báo lại SSH_PRIVATE_KEY ở đây, nó sẽ lấy từ GitLab Settings
+    GIT_STRATEGY: clone
   script:
-    - Write-Host "=========================================="
-    - Write-Host "Deploying Admin UI to Azure Static Web App..."
-    - Write-Host "=========================================="
+    - Write-Host "Configuring SSH for GitHub..."
     
-    # Verify deployment token
-    - |
-      if ([string]::IsNullOrEmpty($env:AZURE_SWA_ADMIN_TOKEN)) {
-        Write-Error "AZURE_SWA_ADMIN_TOKEN is not set!"
-        exit 1
-      } else {
-        Write-Host "Deployment token verified"
-      }
+    # Tạo thư mục .ssh nếu chưa có (Dành cho Windows Runner)
+    - if (-not (Test-Path "$env:USERPROFILE\.ssh")) { New-Item -Path "$env:USERPROFILE\.ssh" -ItemType Directory }
     
-    # Verify build artifacts
-    - Write-Host "Verifying build artifacts..."
-    - |
-      if (Test-Path "./moe_admin_ui/dist") { 
-        Write-Host "Build artifacts found"
-        $fileCount = (Get-ChildItem ./moe_admin_ui/dist -Recurse -File).Count
-        Write-Host "Total files to deploy: $fileCount"
-        Get-ChildItem ./moe_admin_ui/dist -Recurse | Select-Object -First 5
-      } else { 
-        Write-Error "Build folder not found!"
-        exit 1
-      }
+    # Copy file SSH Key từ biến GitLab (giả sử bạn đặt tên biến là SSH_PRIVATE_KEY)
+    - Copy-Item "$env:SSH_PRIVATE_KEY" -Destination "$env:USERPROFILE\.ssh\id_ed25519"
     
-    # Deploy to Azure Static Web Apps
-    - Write-Host "Starting deployment..."
-    - npx -y @azure/static-web-apps-cli deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production --verbose
-    - Write-Host "Deployment completed successfully!"
-  when: manual
-  only:
-    - main
-
-# ==================== DEPLOY FE STUDENT TO AZURE SWA ====================
-deploy_fe_student:
-  stage: deploy
-  dependencies:
-    - build_student_ui
-  script:
-    - Write-Host "=========================================="
-    - Write-Host "Deploying Student UI to Azure Static Web App..."
-    - Write-Host "=========================================="
+    # Cấu hình known_hosts để không bị hỏi xác nhận lần đầu
+    - ssh-keyscan github.com | Out-File -FilePath "$env:USERPROFILE\.ssh\known_hosts" -Encoding ascii
     
-    # Verify deployment token
-    - |
-      if ([string]::IsNullOrEmpty($env:AZURE_SWA_STUDENT_TOKEN)) {
-        Write-Error "AZURE_SWA_STUDENT_TOKEN is not set!"
-        exit 1
-      } else {
-        Write-Host "Deployment token verified"
-      }
+    - Write-Host "Syncing to GitHub..."
+    # Cấu hình Git Identity
+    - git config user.email "gitlab-runner@moe.com"
+    - git config user.name "GitLab Runner Sync"
     
-    # Verify build artifacts
-    - Write-Host "Verifying build artifacts..."
-    - |
-      if (Test-Path "./moe_student_ui/dist") { 
-        Write-Host "Build artifacts found"
-        $fileCount = (Get-ChildItem ./moe_student_ui/dist -Recurse -File).Count
-        Write-Host "Total files to deploy: $fileCount"
-        Get-ChildItem ./moe_student_ui/dist -Recurse | Select-Object -First 5
-      } else { 
-        Write-Error "Build folder not found!"
-        exit 1
-      }
+    # Xử lý Remote và Push
+    - if (git remote | Select-String "github") { git remote remove github }
+    - git remote add github $env:GITHUB_REPO
     
-    # Deploy to Azure Static Web Apps
-    - Write-Host "Starting deployment..."
-    - npx -y @azure/static-web-apps-cli deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production --verbose
-    - Write-Host "Deployment completed successfully!"
-  when: manual
+    # Đẩy nhánh main lên GitHub (Dùng -f nếu bạn muốn ghi đè hoàn toàn GitHub bằng GitLab)
+    - git push github main -f
+    - Write-Host "Successfully pushed to GitHub!"
   only:
     - main
