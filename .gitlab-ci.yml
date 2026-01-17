@@ -43,44 +43,32 @@ sync_to_github:
     - build_student_ui
   variables:
     GIT_STRATEGY: clone
+    GITHUB_REPO_HTTPS: "github.com/tdtai09423/moe-ui.git"
   script:
     - |
-      Write-Host "--- 1. Checking SSH Tools ---"
-      if (-not (Get-Command ssh-keyscan -ErrorAction SilentlyContinue)) {
-          Write-Error "ssh-keyscan not found. Please install OpenSSH or add Git/bin to Path."
-          exit 1
-      }
-
-      Write-Host "--- 2. Setting up SSH Directory ---"
-      $sshPath = "$env:USERPROFILE\.ssh"
-      if (-not (Test-Path $sshPath)) { 
-          New-Item -Path $sshPath -ItemType Directory -Force 
-      }
-
-      Write-Host "--- 3. Installing Private Key ---"
-      # SSH_PRIVATE_KEY_MOE phải là biến kiểu FILE trong GitLab Settings
-      Copy-Item "$env:SSH_PRIVATE_KEY_MOE" -Destination "$sshPath\id_ed25519" -Force
-      
-      Write-Host "--- 4. Updating known_hosts ---"
-      # Dùng Out-File với Encoding ASCII để ssh có thể đọc được
-      ssh-keyscan -t ed25519 github.com | Out-File -FilePath "$sshPath\known_hosts" -Encoding ascii
-
-      Write-Host "--- 5. Configuring Git and Pushing ---"
-      # Cấu hình SSH để Git sử dụng đúng file key vừa tạo
-      $env:GIT_SSH_COMMAND = "ssh -i $sshPath\id_ed25519 -o UserKnownHostsFile=$sshPath\known_hosts -o StrictHostKeyChecking=no"
-      
+      Write-Host "--- 1. Configuring Git Identity ---"
       git config user.email "gitlab-runner@moe.com"
       git config user.name "GitLab Runner Sync"
-      
-      # Refresh Remote GitHub
-      if (git remote | Select-String "github") { git remote remove github }
-      git remote add github $env:GITHUB_REPO
+
+      Write-Host "--- 2. Preparing Repository ---"
+      # Đảm bảo chúng ta đang ở nhánh main
       git checkout -B main
+
+      Write-Host "--- 3. Configuring Remote with Token ---"
+      if (git remote | Select-String "github") { git remote remove github }
       
-      # Thực hiện Push
-      Write-Host "Pushing to GitHub repo: $env:GITHUB_REPO"
-      git push github main -f
-      
-      Write-Host "Done!"
+      # Sử dụng GitHub Token để authenticate qua HTTPS
+      # URL sẽ có dạng: https://<token>@github.com/user/repo.git
+      $remoteUrl = "https://x-access-token:${env:GITHUB_TOKEN}@${env:GITHUB_REPO_HTTPS}"
+      git remote add github $remoteUrl
+
+      Write-Host "--- 4. Pushing to GitHub via HTTPS ---"
+      try {
+          git push github main -f
+          Write-Host "Successfully pushed to GitHub!"
+      } catch {
+          Write-Error "Failed to push to GitHub. Please check if Port 443 is open."
+          exit 1
+      }
   only:
     - main
