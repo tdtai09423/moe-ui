@@ -39,16 +39,13 @@ build_student_ui:
 sync_to_github:
   stage: sync_to_github
   variables:
-    # Không cần khai báo lại SSH_PRIVATE_KEY ở đây, nó sẽ lấy từ GitLab Settings
     GIT_STRATEGY: clone
   script:
     - Write-Host "Configuring SSH for GitHub..."
-    
-    # Tạo thư mục .ssh nếu chưa có (Dành cho Windows Runner)
+
     - if (-not (Test-Path "$env:USERPROFILE\.ssh")) { New-Item -Path "$env:USERPROFILE\.ssh" -ItemType Directory }
     
-    # Copy file SSH Key từ biến GitLab (giả sử bạn đặt tên biến là SSH_PRIVATE_KEY)
-    - Copy-Item "$env:SSH_PRIVATE_KEY" -Destination "$env:USERPROFILE\.ssh\id_ed25519"
+    - Copy-Item "$env:SSH_PRIVATE_KEY_MOE" -Destination "$env:USERPROFILE\.ssh\id_ed25519"
     
     # Cấu hình known_hosts để không bị hỏi xác nhận lần đầu
     - ssh-keyscan github.com | Out-File -FilePath "$env:USERPROFILE\.ssh\known_hosts" -Encoding ascii
