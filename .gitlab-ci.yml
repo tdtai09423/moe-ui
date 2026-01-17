@@ -42,36 +42,28 @@ sync_to_github:
     - build_admin_ui
     - build_student_ui
   variables:
-    GIT_DEPTH: "0"
-    GIT_SINGLE_BRANCH: "true"
     GIT_STRATEGY: clone
-    GITHUB_REPO_HTTPS: "github.com/tdtai09423/moe-ui.git"
+    GIT_DEPTH: "0" # Lấy toàn bộ lịch sử để không bị lỗi unpack
   script:
     - |
       $ErrorActionPreference = "Stop"
-
-      Write-Host "--- 1. Configuring Git Identity ---"
+      
+      Write-Host "--- 1. Resetting Environment ---"
+      # Xóa sạch cấu hình cũ để tránh xung đột trên Windows VM
       git config --global credential.helper ""
+      git config --global core.ignorecase true
       git config user.email "gitlab-runner@moe.com"
       git config user.name "GitLab Runner Sync"
 
-      Write-Host "--- 2. Preparing Repository ---"
-      # Đảm bảo chúng ta có một nhánh local 'main' sạch sẽ
+      Write-Host "--- 2. Preparing Branch ---"
       git checkout -B main
 
-      Write-Host "--- 3. Configuring Remote with Token ---"
-      if (git remote | Select-String "github") { git remote remove github }
-      $remoteUrl = "https://x-access-token:${env:GITHUB_TOKEN}@${env:GITHUB_REPO_HTTPS}"
-      git remote add github $remoteUrl
-
-      Write-Host "--- 4. Pushing to GitHub (Full Push) ---"
-      # Push toàn bộ lịch sử của nhánh main sang GitHub
-      git push github main --force
+      Write-Host "--- 3. Pushing to GitHub (Direct URL) ---"
+      # Đẩy trực tiếp bằng URL, không qua remote add để tránh lỗi cache ref
+      $githubUrl = "https://x-access-token:${env:GITHUB_TOKEN}@github.com/tdtai09423/moe-ui.git"
       
-      if ($LASTEXITCODE -ne 0) {
-          Write-Error "Git push failed!"
-          exit 1
-      }
+      # Thêm --atomic và -v để xem chi tiết nếu lỗi
+      git push $githubUrl main:main --force --atomic -v
       
       Write-Host "Successfully synced to GitHub!"
   only:
