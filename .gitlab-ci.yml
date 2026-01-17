@@ -75,6 +75,7 @@ sync_to_github:
       # Refresh Remote GitHub
       if (git remote | Select-String "github") { git remote remove github }
       git remote add github $env:GITHUB_REPO
+      git checkout -B main
       
       # Thực hiện Push
       Write-Host "Pushing to GitHub repo: $env:GITHUB_REPO"
