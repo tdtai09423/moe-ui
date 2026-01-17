@@ -98,7 +98,7 @@ deploy_fe_admin:
     
     # Deploy to Azure Static Web Apps
     - Write-Host "Starting deployment..."
-    - swa deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production
+    - npx @azure/static-web-apps-cli deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production
     - Write-Host "Deployment completed successfully!"
   when: manual
   only:
@@ -148,7 +148,7 @@ deploy_fe_student:
     
     # Deploy to Azure Static Web Apps
     - Write-Host "Starting deployment..."
-    - swa deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production
+    - npx @azure/static-web-apps-cli deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production
     - Write-Host "Deployment completed successfully!"
   when: manual
   only:
