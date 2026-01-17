@@ -1,5 +1,4 @@
-name: Deploy to Azure Static Web Apps
-
+name: Deploy
 on:
   push:
     branches:
@@ -8,31 +7,24 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-    name: Build and Deploy Job
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-        with:
-          submodules: true
 
-      - name: Build And Deploy Admin UI
-        id: deploy_admin
+      - name: Deploy Admin UI
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_SWA_ADMIN_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "/moe_admin_ui"
-          api_location: ""
           output_location: "dist"
 
-      - name: Build And Deploy Student UI
-        id: deploy_student
+      - name: Deploy Student UI
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_SWA_STUDENT_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "/moe_student_ui"
-          api_location: ""
           output_location: "dist"
