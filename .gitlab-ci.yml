@@ -38,29 +38,47 @@ build_student_ui:
 # ==================== PUSH TO GITHUB ====================
 sync_to_github:
   stage: sync_to_github
+  dependencies:
+    - build_admin_ui
+    - build_student_ui
   variables:
     GIT_STRATEGY: clone
   script:
-    - Write-Host "Configuring SSH for GitHub..."
+    - Write-Host "Checking for SSH tools..."
+    # Kiểm tra xem ssh-keyscan có tồn tại không để tránh exit status 1 vô nghĩa
+    - if (-not (Get-Command ssh-keyscan -ErrorAction SilentlyContinue)) { Write-Error "ssh-keyscan not found. Please install OpenSSH Client on Runner."; exit 1 }
 
-    - if (-not (Test-Path "$env:USERPROFILE\.ssh")) { New-Item -Path "$env:USERPROFILE\.ssh" -ItemType Directory }
+    - Write-Host "Configuring SSH directory..."
+    $sshPath = "$env:USERPROFILE\.ssh"
+    if (-not (Test-Path $sshPath)) { New-Item -Path $sshPath -ItemType Directory -Force }
     
-    - Copy-Item "$env:SSH_PRIVATE_KEY_MOE" -Destination "$env:USERPROFILE\.ssh\id_ed25519"
+    - Write-Host "Setting up Private Key..."
+    # Sử dụng Force để ghi đè nếu file đã tồn tại từ job trước
+    Copy-Item "$env:SSH_PRIVATE_KEY_MOE" -Destination "$sshPath\id_ed25519" -Force
     
-    # Cấu hình known_hosts để không bị hỏi xác nhận lần đầu
-    - ssh-keyscan github.com | Out-File -FilePath "$env:USERPROFILE\.ssh\known_hosts" -Encoding ascii
+    - Write-Host "Updating known_hosts..."
+    # Sử dụng try-catch để bắt lỗi cụ thể của ssh-keyscan
+    try {
+        ssh-keyscan -t ed25519 github.com | Out-File -FilePath "$sshPath\known_hosts" -Encoding ascii -Force
+    } catch {
+        Write-Error "Failed to scan github.com keys."
+        exit 1
+    }
+
+    - Write-Host "Configuring Git and Syncing..."
+    # Cấu hình SSH command để chỉ định chính xác file key vừa tạo
+    $env:GIT_SSH_COMMAND = "ssh -i $sshPath\id_ed25519 -o UserKnownHostsFile=$sshPath\known_hosts"
     
-    - Write-Host "Syncing to GitHub..."
-    # Cấu hình Git Identity
-    - git config user.email "gitlab-runner@moe.com"
-    - git config user.name "GitLab Runner Sync"
+    git config user.email "gitlab-runner@moe.com"
+    git config user.name "GitLab Runner Sync"
     
-    # Xử lý Remote và Push
-    - if (git remote | Select-String "github") { git remote remove github }
-    - git remote add github $env:GITHUB_REPO
+    if (git remote | Select-String "github") { git remote remove github }
+    git remote add github $env:GITHUB_REPO
     
-    # Đẩy nhánh main lên GitHub (Dùng -f nếu bạn muốn ghi đè hoàn toàn GitHub bằng GitLab)
-    - git push github main -f
-    - Write-Host "Successfully pushed to GitHub!"
+    # Push code
+    Write-Host "Pushing to GitHub..."
+    git push github main -f
+    
+    Write-Host "Sync process finished successfully!"
   only:
     - main
