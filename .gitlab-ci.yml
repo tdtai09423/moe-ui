@@ -1,84 +1,33 @@
-variables:
-  NPM_CONFIG_YES: "true"
-  CI: "false"
-  GITHUB_REPO: "git@github.com:tdtai09423/moe-ui.git"
-
-stages:
-  - build
-  - sync_to_github
-
-default:
-  tags:
-    - moe-kain
-
-# ==================== BUILD STAGES ====================
-.build_template: &build_definition
-  stage: build
-  script:
-    - cd $UI_DIR
-    - npm install
-    - npm run build
-  artifacts:
-    paths:
-      - $UI_DIR/dist/
-    expire_in: 1 hour
-  only:
-    - main
-
-build_admin_ui:
-  <<: *build_definition
-  variables:
-    UI_DIR: "moe_admin_ui"
-
-build_student_ui:
-  <<: *build_definition
-  variables:
-    UI_DIR: "moe_student_ui"
-
-# ==================== PUSH TO GITHUB ====================
 sync_to_github:
   stage: sync_to_github
-  dependencies:
-    - build_admin_ui
-    - build_student_ui
   variables:
-    # 1. Ép Git tải mới hoàn toàn và bỏ qua lỗi hoa/thường trên Windows
+    # 1. Chỉ tải nhánh đang chạy (main), bỏ qua tất cả các nhánh khác
+    GIT_SINGLE_BRANCH: "true"
+    GIT_DEPTH: "1" 
     GIT_STRATEGY: clone
-    GIT_DEPTH: "0"
-    GIT_CONFIG_COUNT: "1"
-    GIT_CONFIG_KEY_0: "core.ignorecase"
-    GIT_CONFIG_VALUE_0: "true"
     GITHUB_REPO_HTTPS: "github.com/tdtai09423/moe-ui.git"
   script:
     - |
       $ErrorActionPreference = "Stop"
 
-      Write-Host "--- 1. Cleaning up Local Environment ---"
-      # Đảm bảo không còn thông tin cũ nào ảnh hưởng
+      Write-Host "--- 1. Configuring Git ---"
       git config --global core.ignorecase true
       git config user.email "gitlab-runner@moe.com"
       git config user.name "GitLab Runner Sync"
 
       Write-Host "--- 2. Checking out Main ---"
-      # Khởi tạo lại nhánh main từ commit hiện tại
+      # Vì đã dùng GIT_SINGLE_BRANCH, Runner lúc này chỉ thấy duy nhất nhánh main
       git checkout -B main
 
-      Write-Host "--- 3. Configuring Remote with Token ---"
+      Write-Host "--- 3. Pushing to GitHub ---"
       if (git remote | Select-String "github") { git remote remove github }
-      
-      # Sử dụng x-access-token với biến GITHUB_TOKEN đã lưu trong GitLab
       $remoteUrl = "https://x-access-token:${env:GITHUB_TOKEN}@${env:GITHUB_REPO_HTTPS}"
       git remote add github $remoteUrl
 
-      Write-Host "--- 4. Pushing to GitHub ---"
-      # Push toàn bộ nội dung sang GitHub (nhánh main)
-      git push github main --force --atomic
+      # Push sang GitHub
+      git push github main --force
       
-      if ($LASTEXITCODE -ne 0) {
-          Write-Error "Git push failed!"
-          exit 1
-      }
-      
+      if ($LASTEXITCODE -ne 0) { exit 1 }
       Write-Host "Successfully synced to GitHub!"
   only:
     - main
