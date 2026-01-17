@@ -6,15 +6,16 @@ const DEFAULT_FILTER = {
   pageNumber: 1,
   pageSize: 20,
   Search: "",
-  EducationLevel: [],
+  EducationLevels: [],
   SchoolingStatus: "",
-  ResidentialStatus: [],
-  MinBlance: null,
-  MaxBlance: null,
+  ResidentialStatuses: [],
+  MinBalance: null,
+  MaxBalance: null,
   MinAge: null,
   MaxAge: null,
-//   SortBy: "",
-//   SortDescending: false,
+  SortBy: null,
+  SortDescending: false,
+  IsActive: true,
 };
 
 export const useAccountList = () => {
@@ -28,8 +29,15 @@ export const useAccountList = () => {
     try {
       const result = await accountService.getListAccount(customFilter);
       console.log(result.data);
-      setData(result.data.items);
-      setTotal(result.data.totalCount);
+      // Ensure data is always an array
+      const items = result.data?.items || result?.items || [];
+      const totalCount = result.data?.totalCount || result?.totalCount || 0;
+      setData(Array.isArray(items) ? items : []);
+      setTotal(totalCount);
+    } catch (error) {
+      console.error("Failed to fetch account list:", error);
+      setData([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -56,6 +64,24 @@ export const useAccountList = () => {
     }));
   };
 
+  const updateSort = (field, order) => {
+    // Map Ant Design sort order to backend expectations
+    const sortByMap = {
+      'fullName': 'FullName',
+      'age': 'Age',
+      'balance': 'Balance',
+      'educationLevel': 'EducationLevel',
+      'created': 'CreatedDate'
+    };
+
+    setFilter((prev) => ({
+      ...prev,
+      SortBy: field ? sortByMap[field] : null,
+      SortDescending: order === 'descend',
+      pageNumber: 1,
+    }));
+  };
+
   return {
     data,
     total,
@@ -63,6 +89,7 @@ export const useAccountList = () => {
     filter,
     updateFilter,
     changePage,
+    updateSort,
     fetchData,
   };
 };

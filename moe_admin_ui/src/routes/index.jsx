@@ -1,10 +1,11 @@
-import React from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import AdminLayout from '../layouts/AdminLayout';
-import IntroduceLayout from '../layouts/IntroduceLayout';
-import IntroducePage from '../pages/Introduce/IntroducePage.jsx';
-import AccountManage from '../pages/accounts/AccountManage';
-import StudentDetailPage from '../pages/accounts/components/AccountDetail.jsx';
+import React from "react";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import AdminLayout from "../layouts/AdminLayout";
+import IntroduceLayout from "../layouts/IntroduceLayout";
+import IntroducePage from "../pages/Introduce/IntroducePage.jsx";
+import { AccountManage, AccountDetail } from "../pages/accounts";
+import { CourseManagement, CourseDetail } from "../pages/courses";
+import Dashboard from '../pages/Dashboard/Dashboard';
 
 //Pages
 
@@ -15,7 +16,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true, // Đây là trang sẽ hiện ra khi vào địa chỉ "/"
-        element: <div>Trang Dashboard</div> 
+        element: <Dashboard/>
       },
       {
         path: "accounts",
@@ -26,11 +27,24 @@ export const router = createBrowserRouter([
           },
           {
             path: ":id",
-            element: <StudentDetailPage />,
+            element: <AccountDetail />,
           },
         ],
       },
-    ]
+      {
+        path: "courses",
+        children: [
+          {
+            index: true,
+            element: <CourseManage />,
+          },
+          {
+            path: ":courseCode",
+            element: <CourseDetail />,
+          },
+        ],
+      }
+    ],
   },
  {
     path: '/introduce',

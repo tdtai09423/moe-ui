@@ -1,8 +1,10 @@
-@use '../../../assets/styles/_variables' as *;
+@use '../../assets/styles/_variables' as *;
 
 .sharedHeader {
-  background: $color-bg-white !important; 
-  border-bottom: 1px solid $color-border;
+  background: rgba(255, 255, 255, 0.8) !important; 
+  backdrop-filter: blur(10px); 
+  -webkit-backdrop-filter: blur(10px); 
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
   padding: 0 24px !important;
   height: $header-height !important;
   display: flex;

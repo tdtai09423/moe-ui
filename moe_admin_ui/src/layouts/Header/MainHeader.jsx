@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout } from 'antd';
-import EduLogo from '../../../assets/icon/EduLogo';
+import EduLogo from '../../assets/icon/EduLogo';
 import { SafetyCertificateOutlined, UserOutlined } from '@ant-design/icons';
 import styles from './MainHeader.module.scss';
 

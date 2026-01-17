@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRightOutlined, UserOutlined, SafetyOutlined, CheckCircleFilled } from '@ant-design/icons';
-import EduLogo from '../../../assets/icon/EduLogo';
+import EduLogo from '../../assets/icon/EduLogo';
 import IntroduceLayout from '../../layouts/IntroduceLayout';
 import styles from './IntroducePage.module.scss';
 
