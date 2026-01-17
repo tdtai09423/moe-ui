@@ -10,6 +10,12 @@ stages:
 default:
   tags:
     - moe-kain
+  before_script:
+    - |
+      # Migrate to reftable format to handle case-insensitive filesystem
+      if (Test-Path .git) {
+        git refs migrate --ref-format=reftable 2>$null
+      }
 
 # ==================== BUILD STAGES ====================
 .build_template: &build_definition
