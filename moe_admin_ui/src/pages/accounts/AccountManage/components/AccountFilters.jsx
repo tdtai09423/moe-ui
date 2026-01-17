@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Input, Select, Button, Checkbox } from "antd";
 import {
   SearchOutlined,
@@ -12,6 +12,40 @@ import {
 import styles from "./AccountFilters.module.scss";
 
 const AccountFilters = ({ filter, updateFilter, total, dataCount }) => {
+  // Validate balance range
+  const balanceRangeError = useMemo(() => {
+    const min = parseFloat(filter.MinBalance);
+    const max = parseFloat(filter.MaxBalance);
+    
+    if (filter.MinBalance && min < 0) {
+      return "Balance cannot be negative";
+    }
+    if (filter.MaxBalance && max < 0) {
+      return "Balance cannot be negative";
+    }
+    if (!isNaN(min) && !isNaN(max) && min > max) {
+      return "Max balance must be greater than or equal to min balance";
+    }
+    return null;
+  }, [filter.MinBalance, filter.MaxBalance]);
+
+  // Validate age range
+  const ageRangeError = useMemo(() => {
+    const min = parseFloat(filter.MinAge);
+    const max = parseFloat(filter.MaxAge);
+    
+    if (filter.MinAge && min < 0) {
+      return "Age cannot be negative";
+    }
+    if (filter.MaxAge && max < 0) {
+      return "Age cannot be negative";
+    }
+    if (!isNaN(min) && !isNaN(max) && min > max) {
+      return "Max age must be greater than or equal to min age";
+    }
+    return null;
+  }, [filter.MinAge, filter.MaxAge]);
+
   const hasActiveFilters = () => {
     return (
       (filter.Search && filter.Search.trim() !== '') ||
@@ -131,20 +165,35 @@ const AccountFilters = ({ filter, updateFilter, total, dataCount }) => {
               type="number"
               min={0}
               placeholder="Min"
-              className={styles.rangeInput}
+              className={`${styles.rangeInput} ${balanceRangeError ? styles.errorInput : ''}`}
               value={filter.MinBalance}
-              onChange={(e) => updateFilter({ MinBalance: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '' || parseFloat(value) >= 0) {
+                  updateFilter({ MinBalance: value });
+                }
+              }}
+              status={balanceRangeError ? "error" : ""}
             />
             <span className={styles.separator}>-</span>
             <Input
               type="number"
               min={0}
               placeholder="Max"
-              className={styles.rangeInput}
+              className={`${styles.rangeInput} ${balanceRangeError ? styles.errorInput : ''}`}
               value={filter.MaxBalance}
-              onChange={(e) => updateFilter({ MaxBalance: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '' || parseFloat(value) >= 0) {
+                  updateFilter({ MaxBalance: value });
+                }
+              }}
+              status={balanceRangeError ? "error" : ""}
             />
           </div>
+          {balanceRangeError && (
+            <span className={styles.errorText}>{balanceRangeError}</span>
+          )}
         </div>
 
         <div className={`${styles.filterItem} ${styles.rangeItem}`}>
@@ -154,20 +203,35 @@ const AccountFilters = ({ filter, updateFilter, total, dataCount }) => {
               type="number"
               min={0}
               placeholder="Min"
-              className={styles.rangeInput}
+              className={`${styles.rangeInput} ${ageRangeError ? styles.errorInput : ''}`}
               value={filter.MinAge}
-              onChange={(e) => updateFilter({ MinAge: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '' || parseFloat(value) >= 0) {
+                  updateFilter({ MinAge: value });
+                }
+              }}
+              status={ageRangeError ? "error" : ""}
             />
             <span className={styles.separator}>-</span>
             <Input
               type="number"
               min={0}
               placeholder="Max"
-              className={styles.rangeInput}
+              className={`${styles.rangeInput} ${ageRangeError ? styles.errorInput : ''}`}
               value={filter.MaxAge}
-              onChange={(e) => updateFilter({ MaxAge: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '' || parseFloat(value) >= 0) {
+                  updateFilter({ MaxAge: value });
+                }
+              }}
+              status={ageRangeError ? "error" : ""}
             />
           </div>
+          {ageRangeError && (
+            <span className={styles.errorText}>{ageRangeError}</span>
+          )}
         </div>
       </div>
 

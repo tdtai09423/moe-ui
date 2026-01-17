@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <CourseManagement />,
+            element: <CourseManage />,
           },
           {
             path: ":courseCode",
