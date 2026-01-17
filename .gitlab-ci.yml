@@ -64,16 +64,12 @@ deploy_fe_admin:
     - Write-Host "Deploying Admin UI to Azure Static Web App..."
     - Write-Host "=========================================="
     
-    # Check and install SWA CLI if needed
-    - Write-Host "Checking for SWA CLI..."
+    # Set proxy if available
     - |
-      try {
-        $null = Get-Command swa -ErrorAction Stop
-        Write-Host "SWA CLI is already installed"
-      } catch {
-        Write-Host "SWA CLI not found. Installing globally..."
-        npm install -g @azure/static-web-apps-cli
-        Write-Host "SWA CLI installed successfully"
+      if ($env:HTTP_PROXY -or $env:HTTPS_PROXY) {
+        Write-Host "Proxy configuration detected"
+        if ($env:HTTP_PROXY) { Write-Host "HTTP_PROXY: $env:HTTP_PROXY" }
+        if ($env:HTTPS_PROXY) { Write-Host "HTTPS_PROXY: $env:HTTPS_PROXY" }
       }
     
     # Verify deployment token
@@ -96,9 +92,13 @@ deploy_fe_admin:
         exit 1
       }
     
+    # Install and use SWA CLI
+    - Write-Host "Installing Azure Static Web Apps CLI..."
+    - npm install -g @azure/static-web-apps-cli
+    
     # Deploy to Azure Static Web Apps
     - Write-Host "Starting deployment..."
-    - npx @azure/static-web-apps-cli deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production
+    - npx --yes @azure/static-web-apps-cli deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production --no-use-keychain
     - Write-Host "Deployment completed successfully!"
   when: manual
   only:
@@ -114,16 +114,12 @@ deploy_fe_student:
     - Write-Host "Deploying Student UI to Azure Static Web App..."
     - Write-Host "=========================================="
     
-    # Check and install SWA CLI if needed
-    - Write-Host "Checking for SWA CLI..."
+    # Set proxy if available
     - |
-      try {
-        $null = Get-Command swa -ErrorAction Stop
-        Write-Host "SWA CLI is already installed"
-      } catch {
-        Write-Host "SWA CLI not found. Installing globally..."
-        npm install -g @azure/static-web-apps-cli
-        Write-Host "SWA CLI installed successfully"
+      if ($env:HTTP_PROXY -or $env:HTTPS_PROXY) {
+        Write-Host "Proxy configuration detected"
+        if ($env:HTTP_PROXY) { Write-Host "HTTP_PROXY: $env:HTTP_PROXY" }
+        if ($env:HTTPS_PROXY) { Write-Host "HTTPS_PROXY: $env:HTTPS_PROXY" }
       }
     
     # Verify deployment token
@@ -146,9 +142,13 @@ deploy_fe_student:
         exit 1
       }
     
+    # Install and use SWA CLI
+    - Write-Host "Installing Azure Static Web Apps CLI..."
+    - npm install -g @azure/static-web-apps-cli
+    
     # Deploy to Azure Static Web Apps
     - Write-Host "Starting deployment..."
-    - npx @azure/static-web-apps-cli deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production
+    - npx --yes @azure/static-web-apps-cli deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production --no-use-keychain
     - Write-Host "Deployment completed successfully!"
   when: manual
   only:
