@@ -42,37 +42,31 @@ sync_to_github:
     - build_admin_ui
     - build_student_ui
   variables:
-    # 1. Ép Git tải mới hoàn toàn và bỏ qua lỗi hoa/thường trên Windows
-    GIT_STRATEGY: clone
     GIT_DEPTH: "0"
-    GIT_CONFIG_COUNT: "1"
-    GIT_CONFIG_KEY_0: "core.ignorecase"
-    GIT_CONFIG_VALUE_0: "true"
+    GIT_SINGLE_BRANCH: "true"
+    GIT_STRATEGY: clone
     GITHUB_REPO_HTTPS: "github.com/tdtai09423/moe-ui.git"
   script:
     - |
       $ErrorActionPreference = "Stop"
 
-      Write-Host "--- 1. Cleaning up Local Environment ---"
-      # Đảm bảo không còn thông tin cũ nào ảnh hưởng
-      git config --global core.ignorecase true
+      Write-Host "--- 1. Configuring Git Identity ---"
+      git config --global credential.helper ""
       git config user.email "gitlab-runner@moe.com"
       git config user.name "GitLab Runner Sync"
 
-      Write-Host "--- 2. Checking out Main ---"
-      # Khởi tạo lại nhánh main từ commit hiện tại
+      Write-Host "--- 2. Preparing Repository ---"
+      # Đảm bảo chúng ta có một nhánh local 'main' sạch sẽ
       git checkout -B main
 
       Write-Host "--- 3. Configuring Remote with Token ---"
       if (git remote | Select-String "github") { git remote remove github }
-      
-      # Sử dụng x-access-token với biến GITHUB_TOKEN đã lưu trong GitLab
       $remoteUrl = "https://x-access-token:${env:GITHUB_TOKEN}@${env:GITHUB_REPO_HTTPS}"
       git remote add github $remoteUrl
 
-      Write-Host "--- 4. Pushing to GitHub ---"
-      # Push toàn bộ nội dung sang GitHub (nhánh main)
-      git push github main --force --atomic
+      Write-Host "--- 4. Pushing to GitHub (Full Push) ---"
+      # Push toàn bộ lịch sử của nhánh main sang GitHub
+      git push github main --force
       
       if ($LASTEXITCODE -ne 0) {
           Write-Error "Git push failed!"
