@@ -1,3 +1,41 @@
+variables:
+  NPM_CONFIG_YES: "true"
+  CI: "false"
+  GITHUB_REPO: "git@github.com:tdtai09423/moe-ui.git"
+
+stages:
+  - build
+  - sync_to_github
+
+default:
+  tags:
+    - moe-kain
+
+# ==================== BUILD STAGES ====================
+.build_template: &build_definition
+  stage: build
+  script:
+    - cd $UI_DIR
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - $UI_DIR/dist/
+    expire_in: 1 hour
+  only:
+    - main
+
+build_admin_ui:
+  <<: *build_definition
+  variables:
+    UI_DIR: "moe_admin_ui"
+
+build_student_ui:
+  <<: *build_definition
+  variables:
+    UI_DIR: "moe_student_ui"
+
+# ==================== PUSH TO GITHUB ====================
 sync_to_github:
   stage: sync_to_github
   variables:
