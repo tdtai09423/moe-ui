@@ -10,35 +10,142 @@ default:
   tags:
     - moe-kain
 
-# ==================== BUILD STAGES ====================
-
+# ==================== BUILD FE ADMIN ====================
 build_admin_ui:
   stage: build
   script:
+    - Write-Host "=========================================="
+    - Write-Host "Building Admin UI..."
+    - Write-Host "=========================================="
     - cd moe_admin_ui
+    - Write-Host "Installing dependencies..."
     - npm install
+    - Write-Host "Building project..."
     - npm run build
+    - Write-Host "Build completed successfully!"
+    - Write-Host "Checking build output..."
+    - if (Test-Path "./dist") { Write-Host "dist folder exists"; Get-ChildItem ./dist -Recurse | Select-Object -First 5 } else { Write-Error "dist folder not found!"; exit 1 }
   artifacts:
-    when: always
     paths:
-      - moe_admin_ui/dist/  # This saves the folder for the next stage
-    expire_in: 1 day
+      - moe_admin_ui/dist/
+    expire_in: 1 hour
   only:
     - main
 
-# ==================== DEPLOY STAGES ====================
+# ==================== BUILD FE STUDENT ====================
+build_student_ui:
+  stage: build
+  script:
+    - Write-Host "=========================================="
+    - Write-Host "Building Student UI..."
+    - Write-Host "=========================================="
+    - cd moe_student_ui
+    - Write-Host "Installing dependencies..."
+    - npm install
+    - Write-Host "Building project..."
+    - npm run build
+    - Write-Host "Build completed successfully!"
+    - Write-Host "Checking build output..."
+    - if (Test-Path "./dist") { Write-Host "dist folder exists"; Get-ChildItem ./dist -Recurse | Select-Object -First 5 } else { Write-Error "dist folder not found!"; exit 1 }
+  artifacts:
+    paths:
+      - moe_student_ui/dist/
+    expire_in: 1 hour
+  only:
+    - main
 
+# ==================== DEPLOY FE ADMIN TO AZURE SWA ====================
 deploy_fe_admin:
   stage: deploy
-  needs: ["build_admin_ui"]
+  dependencies:
+    - build_admin_ui
   script:
-    # Use standard Shell/PowerShell syntax. Ensure variables are set in GitLab CI/CD Settings
-    - echo "Logging in to Azure..."
-    - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
+    - Write-Host "=========================================="
+    - Write-Host "Deploying Admin UI to Azure Static Web App..."
+    - Write-Host "=========================================="
     
-    - echo "Deploying to Static Web App..."
-    # The source should point to the artifact folder downloaded from the build stage
-    - az staticwebapp deploy --name "$AZURE_APP_NAME" --resource-group "$RESOURCE_GROUP" --source "./moe_admin_ui/dist" --token "$AZURE_SWA_ADMIN_TOKEN"
+    # Check if SWA CLI is installed
+    - Write-Host "Checking for SWA CLI..."
+    - $swaPath = Get-Command swa -ErrorAction SilentlyContinue
+    - if (-not $swaPath) {
+        Write-Host "SWA CLI not found. Installing globally...";
+        npm install -g @azure/static-web-apps-cli;
+        Write-Host "SWA CLI installed successfully";
+      } else {
+        Write-Host "SWA CLI found at:" $swaPath.Source;
+      }
+    
+    # Verify deployment token
+    - if ([string]::IsNullOrEmpty($env:AZURE_SWA_ADMIN_TOKEN)) {
+        Write-Error "AZURE_SWA_ADMIN_TOKEN is not set!";
+        exit 1;
+      } else {
+        Write-Host "Deployment token verified (length:" $env:AZURE_SWA_ADMIN_TOKEN.Length ")";
+      }
+    
+    # Verify build artifacts
+    - Write-Host "Verifying build artifacts..."
+    - if (Test-Path "./moe_admin_ui/dist") { 
+        Write-Host "Build artifacts found"; 
+        Write-Host "Files in dist folder:";
+        Get-ChildItem ./moe_admin_ui/dist -Recurse | Select-Object -First 10;
+      } else { 
+        Write-Error "Build folder (./moe_admin_ui/dist) not found!"; 
+        exit 1;
+      }
+    
+    # Deploy to Azure Static Web Apps
+    - Write-Host "Starting deployment..."
+    - swa deploy ./moe_admin_ui/dist --deployment-token $env:AZURE_SWA_ADMIN_TOKEN --env production
+    - Write-Host "Deployment completed successfully!"
+  when: manual
+  only:
+    - main
+
+# ==================== DEPLOY FE STUDENT TO AZURE SWA ====================
+deploy_fe_student:
+  stage: deploy
+  dependencies:
+    - build_student_ui
+  script:
+    - Write-Host "=========================================="
+    - Write-Host "Deploying Student UI to Azure Static Web App..."
+    - Write-Host "=========================================="
+    
+    # Check if SWA CLI is installed
+    - Write-Host "Checking for SWA CLI..."
+    - $swaPath = Get-Command swa -ErrorAction SilentlyContinue
+    - if (-not $swaPath) {
+        Write-Host "SWA CLI not found. Installing globally...";
+        npm install -g @azure/static-web-apps-cli;
+        Write-Host "SWA CLI installed successfully";
+      } else {
+        Write-Host "SWA CLI found at:" $swaPath.Source;
+      }
+    
+    # Verify deployment token
+    - if ([string]::IsNullOrEmpty($env:AZURE_SWA_STUDENT_TOKEN)) {
+        Write-Error "AZURE_SWA_STUDENT_TOKEN is not set!";
+        exit 1;
+      } else {
+        Write-Host "Deployment token verified (length:" $env:AZURE_SWA_STUDENT_TOKEN.Length ")";
+      }
+    
+    # Verify build artifacts
+    - Write-Host "Verifying build artifacts..."
+    - if (Test-Path "./moe_student_ui/dist") { 
+        Write-Host "Build artifacts found"; 
+        Write-Host "Files in dist folder:";
+        Get-ChildItem ./moe_student_ui/dist -Recurse | Select-Object -First 10;
+      } else { 
+        Write-Error "Build folder (./moe_student_ui/dist) not found!"; 
+        exit 1;
+      }
+    
+    # Deploy to Azure Static Web Apps
+    - Write-Host "Starting deployment..."
+    - swa deploy ./moe_student_ui/dist --deployment-token $env:AZURE_SWA_STUDENT_TOKEN --env production
+    - Write-Host "Deployment completed successfully!"
   when: manual
   only:
     - main
