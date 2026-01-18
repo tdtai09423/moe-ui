@@ -11,6 +11,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      # --- DEPLOY ADMIN UI ---
       - name: Deploy Admin UI
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -19,7 +20,10 @@ jobs:
           action: "upload"
           app_location: "/moe_admin_ui"
           output_location: "dist"
+        env: # Truyền biến cho Admin UI
+          VITE_ADMIN_URL: ${{ secrets.VITE_ADMIN_URL }}
 
+      # --- DEPLOY STUDENT UI ---
       - name: Deploy Student UI
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -28,3 +32,6 @@ jobs:
           action: "upload"
           app_location: "/moe_student_ui"
           output_location: "dist"
+        env: # Truyền biến cho Student UI
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_SERVICE_URL: ${{ secrets.VITE_SERVICE_URL }}
