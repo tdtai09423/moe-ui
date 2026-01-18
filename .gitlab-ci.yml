@@ -66,5 +66,6 @@ sync_to_github:
       git push $githubUrl main:main --force --atomic -v
       
       Write-Host "Successfully synced to GitHub!"
+  when: manual
   only:
     - main
